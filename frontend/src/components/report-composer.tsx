@@ -48,11 +48,11 @@ async function placeLabel(latitude: number, longitude: number) {
 export async function pickReportPhotos(): Promise<'added' | 'cancel' | string> {
   const { draft, addPhotos } = useMapSheetStore.getState()
   const room = MAX_REPORT_PHOTOS - draft.photos.length
-  if (room <= 0) return 'Możesz dodać najwyżej 5 zdjęć.'
+  if (room <= 0) return 'You can add up to 5 photos.'
 
   try {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync()
-    if (!permission.granted) return 'Włącz dostęp do zdjęć, żeby je dodać.'
+    if (!permission.granted) return 'Allow photo access to add them.'
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
       quality: 0.7,
@@ -63,7 +63,7 @@ export async function pickReportPhotos(): Promise<'added' | 'cancel' | string> {
     addPhotos(result.assets.map((asset) => asset.uri))
     return 'added'
   } catch {
-    return 'Nie udało się dodać zdjęcia.'
+    return "Couldn't add the photo."
   }
 }
 
@@ -166,7 +166,7 @@ export function ReportComposer({ paddingBottom }: { paddingBottom: number }) {
       <View style={styles.header}>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Wróć do kategorii"
+          accessibilityLabel="Back to categories"
           onPress={() => {
             Keyboard.dismiss()
             cancelCompose()
@@ -178,17 +178,19 @@ export function ReportComposer({ paddingBottom }: { paddingBottom: number }) {
             tintColor="#111111"
           />
         </Pressable>
-        <Text style={styles.emoji}>{category.emoji}</Text>
+        <View style={[styles.emojiBadge, { backgroundColor: category.tint }]}>
+          <Text style={styles.emoji}>{category.emoji}</Text>
+        </View>
         <Text style={styles.title} numberOfLines={1}>
           {category.label}
         </Text>
       </View>
 
-      <Text style={styles.section}>Zdjęcia</Text>
+      <Text style={styles.section}>Photos</Text>
       {photos.length === 0 ? (
         <View style={styles.photoActions}>
           <PhotoAction
-            label="Zrób zdjęcie"
+            label="Take photo"
             source="camera"
             disabled={pickingPhoto}
             onPress={() => {
@@ -197,7 +199,7 @@ export function ReportComposer({ paddingBottom }: { paddingBottom: number }) {
             }}
           />
           <PhotoAction
-            label="Z galerii"
+            label="From library"
             source="library"
             disabled={pickingPhoto}
             onPress={() => void openLibrary()}
@@ -212,7 +214,7 @@ export function ReportComposer({ paddingBottom }: { paddingBottom: number }) {
           {room > 0 ? (
             <>
               <PhotoTile
-                label="Aparat"
+                label="Camera"
                 source="camera"
                 disabled={pickingPhoto}
                 onPress={() => {
@@ -221,7 +223,7 @@ export function ReportComposer({ paddingBottom }: { paddingBottom: number }) {
                 }}
               />
               <PhotoTile
-                label="Galeria"
+                label="Library"
                 source="library"
                 disabled={pickingPhoto}
                 onPress={() => void openLibrary()}
@@ -233,7 +235,7 @@ export function ReportComposer({ paddingBottom }: { paddingBottom: number }) {
               <Image source={{ uri: photo.uri }} style={styles.thumb} contentFit="cover" />
               <Pressable
                 accessibilityRole="button"
-                accessibilityLabel="Usuń zdjęcie"
+                accessibilityLabel="Remove photo"
                 hitSlop={6}
                 onPress={() => removePhoto(photo.id)}
                 style={styles.thumbRemove}>
@@ -249,13 +251,13 @@ export function ReportComposer({ paddingBottom }: { paddingBottom: number }) {
         </ScrollView>
       )}
       <Text style={styles.hint}>
-        {photoHint ?? `${photos.length} z ${MAX_REPORT_PHOTOS} · zdjęcia są opcjonalne`}
+        {photoHint ?? `${photos.length} of ${MAX_REPORT_PHOTOS} · photos are optional`}
       </Text>
 
-      <Text style={styles.section}>Miejsce</Text>
+      <Text style={styles.section}>Location</Text>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={location ? 'Zmień miejsce zgłoszenia' : 'Wskaż miejsce na mapie'}
+        accessibilityLabel={location ? 'Change report location' : 'Pick a place on the map'}
         onPress={beginPickLocation}
         style={({ pressed }) => [styles.locationCard, pressed && styles.pressed]}>
         <View style={styles.locationIcon}>
@@ -275,20 +277,20 @@ export function ReportComposer({ paddingBottom }: { paddingBottom: number }) {
             {locationDetail(location, locating)}
           </Text>
         </View>
-        <Text style={styles.locationAction}>{location ? 'Zmień' : 'Wskaż'}</Text>
+        <Text style={styles.locationAction}>{location ? 'Change' : 'Pick'}</Text>
       </Pressable>
-      <Text style={styles.hint}>Domyślnie tam, gdzie jesteś. Zmień, jeśli odszedłeś.</Text>
+      <Text style={styles.hint}>Defaults to where you are. Change it if you walked away.</Text>
 
-      <Text style={styles.section}>Szczegóły</Text>
+      <Text style={styles.section}>Details</Text>
       <View onLayout={(event) => { titleOffset.current = event.nativeEvent.layout.y }}>
         <Text style={styles.fieldLabel}>
-          Tytuł <Text style={styles.optional}>opcjonalnie</Text>
+          Title <Text style={styles.optional}>optional</Text>
         </Text>
         <BottomSheetTextInput
           value={title}
           onChangeText={setTitle}
           onFocus={() => revealField(titleOffset.current)}
-          placeholder="Np. zepsuta lampa"
+          placeholder="e.g. broken streetlight"
           placeholderTextColor="#8E8E93"
           style={styles.input}
           returnKeyType="next"
@@ -298,13 +300,13 @@ export function ReportComposer({ paddingBottom }: { paddingBottom: number }) {
         onLayout={(event) => { descriptionOffset.current = event.nativeEvent.layout.y }}
         style={styles.descriptionBlock}>
         <Text style={styles.fieldLabel}>
-          Opis <Text style={styles.optional}>opcjonalnie</Text>
+          Description <Text style={styles.optional}>optional</Text>
         </Text>
         <BottomSheetTextInput
           value={description}
           onChangeText={setDescription}
           onFocus={() => revealField(descriptionOffset.current)}
-          placeholder="Co dokładnie widzisz?"
+          placeholder="What exactly do you see?"
           placeholderTextColor="#8E8E93"
           style={[styles.input, styles.inputMultiline]}
           multiline
@@ -314,7 +316,7 @@ export function ReportComposer({ paddingBottom }: { paddingBottom: number }) {
 
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel="Wyślij zgłoszenie"
+        accessibilityLabel="Send report"
         accessibilityState={{ disabled: !canSend }}
         disabled={!canSend}
         onPress={() => {
@@ -322,7 +324,7 @@ export function ReportComposer({ paddingBottom }: { paddingBottom: number }) {
           submitReport()
         }}
         style={({ pressed }) => [styles.send, !canSend && styles.sendDisabled, pressed && canSend && styles.pressed]}>
-        <Text style={styles.sendText}>Wyślij zgłoszenie</Text>
+        <Text style={styles.sendText}>Send report</Text>
       </Pressable>
       <ReportCamera
         visible={cameraOpen}
@@ -357,25 +359,25 @@ export function PickLocationDock() {
 
   return (
     <View style={styles.pick}>
-      <Text style={styles.pickTitle}>Przesuń mapę na miejsce problemu</Text>
+      <Text style={styles.pickTitle}>Move the map to the problem</Text>
       <View style={styles.pickActions}>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Anuluj zmianę miejsca"
+          accessibilityLabel="Cancel location change"
           onPress={cancelPickLocation}
           style={({ pressed }) => [styles.pickCancel, pressed && styles.pressed]}>
-          <Text style={styles.pickCancelText}>Anuluj</Text>
+          <Text style={styles.pickCancelText}>Cancel</Text>
         </Pressable>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Zatwierdź miejsce"
+          accessibilityLabel="Confirm location"
           disabled={saving}
           onPress={confirm}
           style={({ pressed }) => [styles.pickDone, pressed && styles.pressed]}>
           {saving ? (
             <ActivityIndicator color="#FFFFFF" />
           ) : (
-            <Text style={styles.pickDoneText}>Gotowe</Text>
+            <Text style={styles.pickDoneText}>Done</Text>
           )}
         </Pressable>
       </View>
@@ -384,16 +386,16 @@ export function PickLocationDock() {
 }
 
 function locationTitle(location: ReportLocation | null, locating: boolean) {
-  if (locating && !location) return 'Szukam Cię…'
-  if (!location) return 'Brak lokalizacji'
-  if (location.source === 'picked') return 'Wybrane miejsce'
-  return 'Twoja lokalizacja'
+  if (locating && !location) return 'Finding you…'
+  if (!location) return 'No location'
+  if (location.source === 'picked') return 'Chosen place'
+  return 'Your location'
 }
 
 function locationDetail(location: ReportLocation | null, locating: boolean) {
   if (location) return location.label
-  if (locating) return 'Za chwilę ustawimy punkt, w którym jesteś.'
-  return 'Wskaż problem na mapie.'
+  if (locating) return "We'll drop a pin where you are in a moment."
+  return 'Point to the problem on the map.'
 }
 
 function PhotoSymbol({ source, size }: { source: 'camera' | 'library'; size: number }) {
@@ -489,8 +491,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  emojiBadge: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   emoji: {
-    fontSize: 28,
+    fontSize: 24,
   },
   title: {
     flex: 1,

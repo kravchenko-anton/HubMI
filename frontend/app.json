@@ -10,7 +10,7 @@
     "ios": {
       "icon": "./assets/expo.icon",
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "Hubmi używa Twojej lokalizacji, aby pokazać Cię na mapie."
+        "NSLocationWhenInUseUsageDescription": "Hubmi uses your location to show you on the map."
       }
     },
     "android": {
@@ -37,21 +37,21 @@
       [
         "expo-location",
         {
-          "locationWhenInUsePermission": "Hubmi używa Twojej lokalizacji, aby pokazać Cię na mapie."
+          "locationWhenInUsePermission": "Hubmi uses your location to show you on the map."
         }
       ],
       [
         "expo-image-picker",
         {
-          "photosPermission": "Hubmi używa zdjęć, żeby dodać je do zgłoszenia.",
-          "cameraPermission": "Hubmi używa aparatu, żeby zrobić zdjęcie do zgłoszenia.",
+          "photosPermission": "Hubmi uses your photos to attach them to a report.",
+          "cameraPermission": "Hubmi uses the camera to take a photo for a report.",
           "microphonePermission": false
         }
       ],
       [
         "expo-camera",
         {
-          "cameraPermission": "Hubmi używa aparatu, żeby zrobić zdjęcie do zgłoszenia.",
+          "cameraPermission": "Hubmi uses the camera to take a photo for a report.",
           "recordAudioAndroid": false,
           "barcodeScannerEnabled": false
         }

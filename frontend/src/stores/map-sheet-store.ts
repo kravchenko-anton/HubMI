@@ -1,14 +1,16 @@
 import { create } from 'zustand';
 
+import type { Issue } from '@/api/issues';
 import { USER_ZOOM } from '@/constants/map';
 import { useMapViewportStore, type LngLat } from '@/stores/map-viewport-store';
 
-export type MapSheetContent = 'search' | 'reports' | 'compose' | 'pick-location';
+export type MapSheetContent = 'home' | 'reports' | 'compose' | 'pick-location' | 'issue';
 
 export type ReportCategory = {
   id: string;
   label: string;
   emoji: string;
+  tint: string;
 };
 
 export type ReportPhoto = {
@@ -41,20 +43,31 @@ const emptyDraft = (): ReportDraft => ({
   location: null,
 });
 
+const HOME_STACK: MapSheetContent[] = ['home'];
+
+function route(stack: MapSheetContent[]) {
+  const next = stack.slice();
+  return {
+    stack: next,
+    content: next[next.length - 1] ?? 'home',
+  };
+}
+
+/** Set before leaving the overlay so the sheet disappears instead of sliding down again. */
+export const sheetMotion = { instantDismiss: false };
+
 type MapSheetState = {
+  stack: MapSheetContent[];
   content: MapSheetContent;
-  searchOpen: boolean;
-  query: string;
-  destination: string;
   reportCount: number;
   notice: string | null;
   draft: ReportDraft;
+  selectedIssue: Issue | null;
   showReports: () => void;
-  showSearch: () => void;
-  openSearch: () => void;
-  closeSearch: () => void;
-  setQuery: (query: string) => void;
-  selectDestination: (name: string, notice?: string) => void;
+  showHome: () => void;
+  openIssue: (issue: Issue) => void;
+  closeIssue: () => void;
+  setSelectedIssue: (issue: Issue) => void;
   startReport: (category: ReportCategory) => void;
   cancelCompose: () => void;
   setTitle: (title: string) => void;
@@ -74,41 +87,45 @@ function leaveReportFlow() {
 }
 
 export const useMapSheetStore = create<MapSheetState>((set, get) => ({
-  content: 'search',
-  searchOpen: false,
-  query: '',
-  destination: 'Karkonoska',
+  stack: HOME_STACK,
+  content: 'home',
   reportCount: 0,
   notice: null,
   draft: emptyDraft(),
+  selectedIssue: null,
   showReports: () => {
     leaveReportFlow();
-    set({ content: 'reports', searchOpen: false, draft: emptyDraft() });
-  },
-  showSearch: () => {
-    leaveReportFlow();
-    set({ content: 'search', searchOpen: false, query: '', draft: emptyDraft() });
-  },
-  openSearch: () => set({ content: 'search', searchOpen: true }),
-  closeSearch: () => set({ searchOpen: false, query: '' }),
-  setQuery: (query) => set({ query }),
-  selectDestination: (name, notice) =>
     set({
-      destination: name,
-      searchOpen: false,
-      query: '',
-      content: 'search',
-      notice: notice ?? null,
-    }),
+      ...route(['home', 'reports']),
+      draft: emptyDraft(),
+      selectedIssue: null,
+    });
+  },
+  showHome: () => {
+    leaveReportFlow();
+    set({ ...route(HOME_STACK), draft: emptyDraft(), selectedIssue: null });
+  },
+  openIssue: (issue) => {
+    useMapViewportStore.getState().flyTo([issue.lng, issue.lat]);
+    set({
+      ...route(['home', 'issue']),
+      selectedIssue: issue,
+      draft: emptyDraft(),
+    });
+  },
+  closeIssue: () => {
+    set({ ...route(HOME_STACK), draft: emptyDraft(), selectedIssue: null });
+  },
+  setSelectedIssue: (issue) => set({ selectedIssue: issue }),
   startReport: (category) =>
     set({
-      content: 'compose',
-      searchOpen: false,
+      ...route(['home', 'reports', 'compose']),
       draft: { ...emptyDraft(), category },
+      selectedIssue: null,
     }),
   cancelCompose: () => {
     leaveReportFlow();
-    set({ content: 'reports', draft: emptyDraft() });
+    set({ ...route(['home', 'reports']), draft: emptyDraft() });
   },
   setTitle: (title) => set((state) => ({ draft: { ...state.draft, title } })),
   setDescription: (description) => set((state) => ({ draft: { ...state.draft, description } })),
@@ -138,7 +155,7 @@ export const useMapSheetStore = create<MapSheetState>((set, get) => ({
       : viewport.center;
     viewport.pauseTracking();
     viewport.flyTo(center, USER_ZOOM);
-    set({ content: 'pick-location' });
+    set({ ...route(['home', 'reports', 'compose', 'pick-location']) });
   },
   cancelPickLocation: () => {
     const { draft } = get();
@@ -149,11 +166,11 @@ export const useMapSheetStore = create<MapSheetState>((set, get) => ({
     } else {
       viewport.resumeTracking();
     }
-    set({ content: 'compose' });
+    set({ ...route(['home', 'reports', 'compose']) });
   },
   setPickedLocation: (location) =>
     set((state) => ({
-      content: 'compose',
+      ...route(['home', 'reports', 'compose']),
       draft: { ...state.draft, location },
     })),
   submitReport: () => {
@@ -162,12 +179,11 @@ export const useMapSheetStore = create<MapSheetState>((set, get) => ({
     const label = draft.title.trim() || draft.category.label;
     leaveReportFlow();
     set((state) => ({
-      content: 'search',
-      searchOpen: false,
-      query: '',
+      ...route(HOME_STACK),
       draft: emptyDraft(),
+      selectedIssue: null,
       reportCount: state.reportCount + 1,
-      notice: `Zgłoszono: ${label}`,
+      notice: `Reported: ${label}`,
     }));
   },
   clearNotice: () => set({ notice: null }),

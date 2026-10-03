@@ -1,250 +1,277 @@
-import BottomSheet, { BottomSheetTextInput, BottomSheetView } from '@gorhom/bottom-sheet'
+import BottomSheet, { BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet'
 import { SymbolView } from 'expo-symbols'
-import { useEffect, useRef, useState } from 'react'
-import { Keyboard, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native'
-import type { SharedValue } from 'react-native-reanimated'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native'
+import { useSharedValue, type SharedValue } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
+import { IssueDetail } from '@/components/issue-detail'
+import { HOME_PEEK, IssueFeed, IssueFeedHeader } from '@/components/issue-feed'
 import { PickLocationDock, ReportComposer } from '@/components/report-composer'
-import { useMapSheetStore } from '@/stores/map-sheet-store'
+import {
+  dockPan,
+  DockSurface,
+  SHEET_CHROME,
+  SheetStack,
+  type SheetPage,
+} from '@/components/sheet-stack'
+import { sheetMotion, useMapSheetStore } from '@/stores/map-sheet-store'
 
-const SHEET_BACKGROUND = '#FEFDFF';
-const SHEET_HANDLE_HEIGHT = 24;
-const SEARCH_BAR_HEIGHT = 52;
-const SHEET_CONTENT_PADDING_TOP = 4;
-const SHEET_CONTENT_PADDING_BOTTOM = 20;
+const SHEET_BACKGROUND = '#FEFDFF'
+const SHEET_CONTENT_PADDING_BOTTOM = 20
+const DOCK_BODY = 168
+const REPORT_ROW = 72 + 8 + 16 + 22
+const REPORTS_BODY = 4 + 36 + 22 + REPORT_ROW * 3
+const ISSUE_BODY = 4 + 36 + 12 * 5 + 240 + 34 + 26 + 22 + 52
 
-export const COLLAPSED_SHEET_HEIGHT =
-  SHEET_HANDLE_HEIGHT + SHEET_CONTENT_PADDING_TOP + SEARCH_BAR_HEIGHT + SHEET_CONTENT_PADDING_BOTTOM;
-export const REPORT_BUTTON_GAP = 20;
+function keepHeight(current: number, next: number) {
+  if (next <= 0 || Math.abs(current - next) < 2) return current
+  return next
+}
+
+export const REPORT_BUTTON_GAP = 20
 
 const REPORTS = [
-  { id: 'light', label: 'Oświetlenie', emoji: '💡' },
-  { id: 'road', label: 'Droga', emoji: '🚧' },
-  { id: 'waste', label: 'Śmieci', emoji: '🗑️' },
-  { id: 'loud', label: 'Hałas', emoji: '📢' },
-  { id: 'access', label: 'Dostępność', emoji: '♿' },
-  { id: 'animals', label: 'Zwierzęta', emoji: '🐾' },
-  { id: 'vandalism', label: 'Wandalizm', emoji: '🎨' },
-  { id: 'nature', label: 'Natura', emoji: '🍂' },
-  { id: 'other', label: 'Inne', emoji: '❓' },
-] as const;
+  { id: 'light', label: 'Lighting', emoji: '💡', tint: '#FFF4CC' },
+  { id: 'road', label: 'Road', emoji: '🚧', tint: '#FFE8D6' },
+  { id: 'waste', label: 'Trash', emoji: '🗑️', tint: '#E5F6EC' },
+  { id: 'loud', label: 'Noise', emoji: '📢', tint: '#F3E8FF' },
+  { id: 'access', label: 'Accessibility', emoji: '♿', tint: '#E8F1FF' },
+  { id: 'animals', label: 'Animals', emoji: '🐾', tint: '#FFE8F0' },
+  { id: 'vandalism', label: 'Vandalism', emoji: '🎨', tint: '#FDE8F3' },
+  { id: 'nature', label: 'Nature', emoji: '🍂', tint: '#E7F6E9' },
+  { id: 'other', label: 'Other', emoji: '❓', tint: '#F0EEEA' },
+] as const
 
-const PLACES = [
-  { id: 'karkonoska', name: 'Karkonoska', detail: 'Ulica · Kraków' },
-  { id: 'rynek', name: 'Rynek Główny', detail: 'Stare Miasto' },
-  { id: 'wawel', name: 'Wawel', detail: 'Zamek · Kraków' },
-  { id: 'kazimierz', name: 'Kazimierz', detail: 'Dzielnica · Kraków' },
-  { id: 'galeria', name: 'Galeria Krakowska', detail: 'Centrum handlowe' },
-  { id: 'dworzec', name: 'Dworzec Główny', detail: 'Dworzec · Kraków' },
-  { id: 'blonia', name: 'Błonia', detail: 'Park · Kraków' },
-  { id: 'nowa-huta', name: 'Plac Centralny', detail: 'Nowa Huta' },
-] as const;
-
-function fold(value: string) {
-  return value
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '');
-}
-
-export function MapBottomSheet({ animatedPosition }: { animatedPosition: SharedValue<number> }) {
-  const sheetRef = useRef<BottomSheet>(null);
-  const insets = useSafeAreaInsets();
-  const { height } = useWindowDimensions();
-  const content = useMapSheetStore((state) => state.content);
-  const searchOpen = useMapSheetStore((state) => state.searchOpen);
-  const sheetKey = content === 'search' ? (searchOpen ? 'search-open' : 'search') : content;
-  const paddingBottom = SHEET_CONTENT_PADDING_BOTTOM + insets.bottom;
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      sheetRef.current?.snapToIndex(0);
-    }, 150);
-    return () => clearTimeout(timer);
-  }, [sheetKey]);
-
-  return (
-    <BottomSheet
-      ref={sheetRef}
-      index={0}
-      enableDynamicSizing
-      enablePanDownToClose={false}
-      topInset={insets.top}
-      maxDynamicContentSize={height - insets.top - 12}
-      animatedPosition={animatedPosition}
-      keyboardBehavior="interactive"
-      keyboardBlurBehavior="restore"
-      backgroundStyle={styles.background}
-      handleIndicatorStyle={styles.handle}>
-      {content === 'compose' ? (
-        <ReportComposer paddingBottom={paddingBottom} />
-      ) : (
-        <BottomSheetView key={sheetKey} style={[styles.content, { paddingBottom }]}>
-          {content === 'reports' ? (
-            <ReportsContent />
-          ) : content === 'pick-location' ? (
-            <PickLocationDock />
-          ) : (
-            <SearchContent />
-          )}
-        </BottomSheetView>
-      )}
-    </BottomSheet>
-  );
-}
-
-function SearchContent() {
-  const searchOpen = useMapSheetStore((state) => state.searchOpen);
-  const query = useMapSheetStore((state) => state.query);
-  const destination = useMapSheetStore((state) => state.destination);
-  const notice = useMapSheetStore((state) => state.notice);
-  const setQuery = useMapSheetStore((state) => state.setQuery);
-  const openSearch = useMapSheetStore((state) => state.openSearch);
-  const closeSearch = useMapSheetStore((state) => state.closeSearch);
-  const selectDestination = useMapSheetStore((state) => state.selectDestination);
-  const clearNotice = useMapSheetStore((state) => state.clearNotice);
-  const [listening, setListening] = useState(false);
-  const listenTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    if (!notice) return;
-    const timer = setTimeout(clearNotice, 1800);
-    return () => clearTimeout(timer);
-  }, [notice, clearNotice]);
-
-  useEffect(
-    () => () => {
-      if (listenTimer.current) clearTimeout(listenTimer.current);
+export function MapBottomSheet({
+  homePosition,
+  modalPosition,
+}: {
+  homePosition: SharedValue<number>
+  modalPosition: SharedValue<number>
+}) {
+  const homeRef = useRef<BottomSheet>(null)
+  const modalRef = useRef<BottomSheetModal>(null)
+  const opened = useRef(false)
+  const wasPicking = useRef(false)
+  const savedHomeIndex = useRef(1)
+  const closedForPick = useRef(false)
+  const insets = useSafeAreaInsets()
+  const { height: windowHeight } = useWindowDimensions()
+  const content = useMapSheetStore((state) => state.content)
+  const selectedIssue = useMapSheetStore((state) => state.selectedIssue)
+  const picking = content === 'pick-location'
+  const paddingBottom = SHEET_CONTENT_PADDING_BOTTOM + insets.bottom
+  const dockHeight = DOCK_BODY + insets.bottom
+  const [feedHeight, setFeedHeight] = useState(0)
+  const [issueHeight, setIssueHeight] = useState(0)
+  const [reportsHeight, setReportsHeight] = useState(0)
+  const [dockContentHeight, setDockContentHeight] = useState(0)
+  const [settledPage, setSettledPage] = useState<SheetPage | null>(null)
+  const lastOverlaySnap = useRef(0)
+  const onFeedHeight = useCallback((next: number) => {
+    setFeedHeight((current) => keepHeight(current, next))
+  }, [])
+  const onIssueHeight = useCallback((next: number) => {
+    setIssueHeight((current) => keepHeight(current, next))
+  }, [])
+  const onReportsHeight = useCallback((next: number) => {
+    setReportsHeight((current) => keepHeight(current, next))
+  }, [])
+  const onDockHeight = useCallback((next: number) => {
+    setDockContentHeight((current) => keepHeight(current, next))
+  }, [])
+  const onSettledPage = useCallback((page: SheetPage) => {
+    const current = useMapSheetStore.getState().content
+    if (current === 'home' || current === 'pick-location') return
+    setSettledPage(page)
+  }, [])
+  const sheetContainerHeight = Math.max(windowHeight - insets.top, 0)
+  const peek = HOME_PEEK + insets.bottom
+  const homeMax = Math.round(sheetContainerHeight * 0.72)
+  const homeExpanded =
+    feedHeight > 0 ? Math.max(peek, Math.min(homeMax, HOME_PEEK + feedHeight)) : homeMax
+  const homeSnapPoints = useMemo(() => [peek, homeExpanded], [peek, homeExpanded])
+  const overlayMax = Math.max(Math.round(sheetContainerHeight * 0.9), dockHeight)
+  const pageSnap = useCallback(
+    (page: SheetPage) => {
+      if (page === 'compose') return overlayMax
+      const body =
+        page === 'reports'
+          ? reportsHeight || REPORTS_BODY + paddingBottom
+          : issueHeight || ISSUE_BODY + paddingBottom
+      return Math.min(overlayMax, body + SHEET_CHROME)
     },
-    [],
-  );
+    [issueHeight, overlayMax, paddingBottom, reportsHeight],
+  )
+  const overlayPage =
+    content === 'issue' || content === 'reports' || content === 'compose' ? content : null
+  const overlayCandidates = [overlayPage, settledPage].filter(
+    (page): page is SheetPage => page != null,
+  )
+  const resolvedDock = dockContentHeight > 0 ? dockContentHeight + SHEET_CHROME : dockHeight
+  const overlaySnap = picking
+    ? resolvedDock
+    : overlayCandidates.length === 0 || overlayCandidates.some((page) => page === 'compose')
+      ? overlayMax
+      : Math.max(...overlayCandidates.map(pageSnap))
+  if (content !== 'home') lastOverlaySnap.current = overlaySnap
+  const modalSnapPoints = useMemo(
+    () => [content === 'home' ? lastOverlaySnap.current || overlayMax : overlaySnap],
+    [content, overlaySnap],
+  )
 
-  const handleCloseSearch = () => {
-    Keyboard.dismiss();
-    closeSearch();
-  };
+  const renderPage = useCallback(
+    (page: SheetPage) => {
+      if (page === 'compose') return <ReportComposer paddingBottom={paddingBottom} />
+      if (page === 'issue' && selectedIssue) {
+        return (
+          <IssueDetail
+            key={selectedIssue.id}
+            issue={selectedIssue}
+            paddingBottom={paddingBottom}
+            onContentHeight={onIssueHeight}
+          />
+        )
+      }
+      if (page === 'reports') {
+        return (
+          <BottomSheetView style={styles.content}>
+            <View onLayout={(event) => onReportsHeight(event.nativeEvent.layout.height)} style={{ paddingBottom }}>
+              <ReportsContent />
+            </View>
+          </BottomSheetView>
+        )
+      }
+      return null
+    },
+    [onIssueHeight, onReportsHeight, paddingBottom, selectedIssue],
+  )
 
-  const handleMic = () => {
-    if (listening) return;
-    setListening(true);
-    listenTimer.current = setTimeout(() => {
-      const pool = PLACES.filter((place) => place.name !== destination);
-      const pick = pool[Math.floor(Math.random() * pool.length)];
-      selectDestination(pick.name, `Jedziemy: ${pick.name}`);
-      setListening(false);
-    }, 700);
-  };
+  useEffect(() => {
+    if (content === 'home') setSettledPage(null)
+  }, [content])
 
-  const foldedQuery = fold(query.trim());
-  const results = PLACES.filter((place) =>
-    foldedQuery ? fold(place.name).includes(foldedQuery) || fold(place.detail).includes(foldedQuery) : true,
-  );
+  useEffect(() => {
+    if (content === 'pick-location') {
+      closedForPick.current = true
+      homeRef.current?.close()
+      return
+    }
+    if (!closedForPick.current) return
+    closedForPick.current = false
+    homeRef.current?.snapToIndex(savedHomeIndex.current)
+  }, [content])
+
+  useEffect(() => {
+    if (content === 'home') {
+      if (!opened.current) return
+      const instant = sheetMotion.instantDismiss
+      sheetMotion.instantDismiss = false
+      modalRef.current?.dismiss(instant ? { duration: 1 } : undefined)
+      return
+    }
+
+    if (!opened.current) {
+      opened.current = true
+      modalRef.current?.present()
+    } else if (picking !== wasPicking.current) {
+      modalRef.current?.snapToIndex(0)
+    }
+    wasPicking.current = picking
+  }, [content, picking])
+
+  const handleDismiss = () => {
+    opened.current = false
+    wasPicking.current = false
+    if (useMapSheetStore.getState().content !== 'home') {
+      useMapSheetStore.getState().showHome()
+    }
+  }
 
   return (
-    <View style={styles.searchContent}>
-      {notice ? (
-        <View style={styles.notice}>
-          <Text style={styles.noticeText}>{notice}</Text>
+    <>
+      <BottomSheet
+        ref={homeRef}
+        index={1}
+        snapPoints={homeSnapPoints}
+        enablePanDownToClose={false}
+        topInset={insets.top}
+        animatedPosition={homePosition}
+        onChange={(index) => {
+          if (index >= 0) savedHomeIndex.current = index
+        }}
+        backgroundStyle={styles.background}
+        handleIndicatorStyle={styles.handle}>
+        <View style={styles.home}>
+          <IssueFeedHeader bottomInset={insets.bottom} />
+          <View style={[styles.feed, { marginTop: -insets.bottom }]}>
+            <IssueFeed paddingBottom={paddingBottom} onContentHeight={onFeedHeight} />
+          </View>
         </View>
-      ) : null}
+      </BottomSheet>
 
-      <View style={styles.searchBar}>
-        {searchOpen ? (
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Zamknij wyszukiwanie"
-            hitSlop={8}
-            onPress={handleCloseSearch}
-            style={styles.searchBack}>
-            <SymbolView
-              name={{ ios: 'chevron.left', android: 'chevron_left', web: 'chevron_left' }}
-              size={18}
-              tintColor="#111111"
-            />
-          </Pressable>
-        ) : null}
-
-        {searchOpen ? (
-          <BottomSheetTextInput
-            value={query}
-            onChangeText={setQuery}
-            placeholder="Dokąd jedziemy?"
-            placeholderTextColor="#8E8E93"
-            style={styles.searchInput}
-            autoFocus
-            returnKeyType="search"
-          />
-        ) : (
-          <Pressable style={styles.searchPressable} onPress={openSearch}>
-            <Text style={styles.searchPlaceholder}>Dokąd jedziemy?</Text>
-          </Pressable>
-        )}
-
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Szukaj głosem"
-          hitSlop={8}
-          onPress={handleMic}>
-          <SymbolView
-            name={{ ios: 'mic', android: 'mic', web: 'mic' }}
-            size={20}
-            tintColor={listening ? '#2F80ED' : '#8E8E93'}
-          />
-        </Pressable>
-      </View>
-
-      {searchOpen ? (
-        <View style={styles.searchResults}>
-          {results.length === 0 ? (
-            <Text style={styles.emptyResults}>Brak wyników</Text>
+      <BottomSheetModal
+        ref={modalRef}
+        name="map-overlay"
+        snapPoints={modalSnapPoints}
+        enableDynamicSizing={false}
+        enablePanDownToClose={!picking}
+        enableContentPanningGesture={!picking}
+        enableHandlePanningGesture={false}
+        handleComponent={null}
+        backgroundComponent={null}
+        topInset={insets.top}
+        animatedPosition={modalPosition}
+        keyboardBehavior="interactive"
+        keyboardBlurBehavior="restore"
+        onDismiss={handleDismiss}>
+        <View style={styles.modalFill}>
+          {picking ? (
+            <LocationDock paddingBottom={paddingBottom} onContentHeight={onDockHeight} />
           ) : (
-            results.map((place) => {
-              const selected = place.name === destination;
-              return (
-                <Pressable
-                  key={place.id}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected }}
-                  onPress={() => {
-                    Keyboard.dismiss();
-                    selectDestination(place.name);
-                  }}
-                  style={({ pressed }) => [styles.resultRow, pressed && styles.pressed]}>
-                  <View style={[styles.resultIcon, selected && styles.resultIconSelected]}>
-                    <SymbolView
-                      name={{ ios: 'mappin.circle.fill', android: 'location_on', web: 'location_on' }}
-                      size={22}
-                      tintColor={selected ? '#2F80ED' : '#8E8E93'}
-                    />
-                  </View>
-                  <View style={styles.resultText}>
-                    <Text style={styles.resultName}>{place.name}</Text>
-                    <Text style={styles.resultDetail}>{place.detail}</Text>
-                  </View>
-                  {selected ? <Text style={styles.resultCurrent}>Teraz</Text> : null}
-                </Pressable>
-              );
-            })
+            <SheetStack renderPage={renderPage} onSettledPage={onSettledPage} />
           )}
         </View>
-      ) : null}
-    </View>
-  );
+      </BottomSheetModal>
+    </>
+  )
+}
+
+function LocationDock({
+  paddingBottom,
+  onContentHeight,
+}: {
+  paddingBottom: number
+  onContentHeight: (height: number) => void
+}) {
+  const cancelPickLocation = useMapSheetStore((state) => state.cancelPickLocation)
+  const dragY = useSharedValue(0)
+  const gesture = dockPan(dragY, cancelPickLocation)
+
+  return (
+    <DockSurface dragY={dragY} gesture={gesture}>
+      <View
+        onLayout={(event) => onContentHeight(event.nativeEvent.layout.height)}
+        style={[styles.content, { paddingBottom }]}>
+        <PickLocationDock />
+      </View>
+    </DockSurface>
+  )
 }
 
 function ReportsContent() {
-  const showSearch = useMapSheetStore((state) => state.showSearch);
-  const startReport = useMapSheetStore((state) => state.startReport);
+  const showHome = useMapSheetStore((state) => state.showHome)
+  const startReport = useMapSheetStore((state) => state.startReport)
 
   return (
     <View>
       <View style={styles.header}>
-        <Text style={styles.title}>Co widzisz?</Text>
+        <Text style={styles.title}>What do you see?</Text>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Wróć do wyszukiwania"
-          onPress={showSearch}
+          accessibilityLabel="Back to list"
+          onPress={showHome}
           style={({ pressed }) => [styles.closeButton, pressed && styles.pressed]}>
           <SymbolView
             name={{ ios: 'xmark', android: 'close', web: 'close' }}
@@ -263,7 +290,7 @@ function ReportsContent() {
             accessibilityLabel={item.label}
             onPress={() => startReport(item)}
             style={({ pressed }) => [styles.cell, pressed && styles.pressed]}>
-            <View style={styles.iconCircle}>
+            <View style={[styles.iconCircle, { backgroundColor: item.tint }]}>
               <Text style={styles.emoji}>{item.emoji}</Text>
             </View>
             <Text style={styles.iconLabel}>{item.label}</Text>
@@ -271,7 +298,7 @@ function ReportsContent() {
         ))}
       </View>
     </View>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -284,101 +311,17 @@ const styles = StyleSheet.create({
     backgroundColor: '#D0CED4',
     width: 36,
   },
+  home: {
+    flex: 1,
+  },
+  feed: {
+    flex: 1,
+  },
+  modalFill: {
+    flex: 1,
+  },
   content: {
     paddingHorizontal: 16,
-  },
-  searchContent: {
-    gap: 14,
-    paddingTop: SHEET_CONTENT_PADDING_TOP,
-  },
-  notice: {
-    alignSelf: 'center',
-    backgroundColor: '#1C1C1E',
-    borderRadius: 16,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-  },
-  noticeText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  searchBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    height: SEARCH_BAR_HEIGHT,
-    borderRadius: 26,
-    paddingHorizontal: 16,
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#E7E4EC',
-    gap: 8,
-  },
-  searchBack: {
-    width: 28,
-    height: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  searchPressable: {
-    flex: 1,
-    justifyContent: 'center',
-  },
-  searchPlaceholder: {
-    color: '#8E8E93',
-    fontSize: 16,
-  },
-  searchInput: {
-    flex: 1,
-    color: '#111111',
-    fontSize: 16,
-    paddingVertical: 0,
-  },
-  searchResults: {
-    gap: 2,
-  },
-  emptyResults: {
-    color: '#8E8E93',
-    fontSize: 15,
-    textAlign: 'center',
-    paddingVertical: 28,
-  },
-  resultRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    minHeight: 56,
-    paddingVertical: 8,
-    paddingHorizontal: 4,
-  },
-  resultIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#F4F2F8',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  resultIconSelected: {
-    backgroundColor: '#E8F1FD',
-  },
-  resultText: {
-    flex: 1,
-    gap: 2,
-  },
-  resultName: {
-    color: '#111111',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  resultDetail: {
-    color: '#8E8E93',
-    fontSize: 13,
-  },
-  resultCurrent: {
-    color: '#2F80ED',
-    fontSize: 13,
-    fontWeight: '600',
   },
   header: {
     flexDirection: 'row',
@@ -414,7 +357,6 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 36,
-    backgroundColor: '#F4F2F8',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -431,4 +373,4 @@ const styles = StyleSheet.create({
   pressed: {
     opacity: 0.7,
   },
-});
+})
