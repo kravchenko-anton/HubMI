@@ -1,28 +1,10 @@
 [
   {
-    "category": "lighting",
-    "title": "Broken street lamps on Rynek Podgórski",
-    "description": "Three of the lamps around Rynek Podgórski have been out for weeks. The square is pitch black after 9pm and people walking home from the tram feel unsafe.",
-    "lat": 50.044012,
-    "lng": 19.949021,
-    "upvotes": 47,
-    "days_ago": 23
-  },
-  {
-    "category": "lighting",
-    "title": "Dark corner by St. Joseph's Church",
-    "description": "The lamp next to St. Joseph's Church on Rynek Podgórski keeps flickering and then goes off completely. The steps by the side entrance are really hard to see at night.",
-    "lat": 50.044480,
-    "lng": 19.949850,
-    "upvotes": 12,
-    "days_ago": 9
-  },
-  {
     "category": "noise",
     "title": "Loud bar until 3am near Plac Bohaterów Getta",
     "description": "A bar just off Plac Bohaterów Getta plays music with the doors open until 3am on weekends. Guests then stand outside shouting and nobody in our building can sleep.",
-    "lat": 50.046710,
-    "lng": 19.954380,
+    "lat": 50.04671,
+    "lng": 19.95438,
     "upvotes": 64,
     "days_ago": 41
   },
@@ -30,62 +12,26 @@
     "category": "safety",
     "title": "Loose railing on Bernatka footbridge",
     "description": "One section of the railing on Kładka Bernatka on the Podgórze side wobbles when you lean on it. Lots of tourists and kids stop there for photos, so this needs fixing before someone falls.",
-    "lat": 50.047390,
-    "lng": 19.947620,
+    "lat": 50.04739,
+    "lng": 19.94762,
     "upvotes": 176,
     "days_ago": 15
-  },
-  {
-    "category": "traffic",
-    "title": "Cars blocking tram tracks on Kalwaryjska",
-    "description": "Delivery vans keep stopping on the tram tracks on ul. Kalwaryjska near the Korona stop. Trams get stuck for minutes every morning.",
-    "lat": 50.039820,
-    "lng": 19.945310,
-    "upvotes": 28,
-    "days_ago": 77
   },
   {
     "category": "cleanliness",
     "title": "Overflowing bins on Bulwar Poleski",
     "description": "The bins along Bulwary Wiślane on the Dębniki side are overflowing every weekend. Bottles and food wrappers end up blowing into the Vistula.",
-    "lat": 50.050140,
-    "lng": 19.929020,
+    "lat": 50.05014,
+    "lng": 19.92902,
     "upvotes": 33,
     "days_ago": 5
-  },
-  {
-    "category": "infrastructure",
-    "title": "Cracked pavement on ul. Konopnickiej",
-    "description": "The sidewalk on ul. Konopnickiej near the Ludwinów tram stop is broken into loose slabs. I almost tripped with a stroller last week.",
-    "lat": 50.044250,
-    "lng": 19.934110,
-    "upvotes": 19,
-    "days_ago": 132
-  },
-  {
-    "category": "other",
-    "title": "Abandoned e-scooters at Zakrzówek entrance",
-    "description": "Five or six rental scooters have been dumped in the bushes at the entrance to Park Zakrzówek. Nobody from the operators seems to collect them.",
-    "lat": 50.039420,
-    "lng": 19.915870,
-    "upvotes": 8,
-    "days_ago": 18
-  },
-  {
-    "category": "traffic",
-    "title": "Confusing lane markings at Rondo Grunwaldzkie",
-    "description": "The lane markings on Rondo Grunwaldzkie are almost completely worn off. Drivers cut across lanes coming off the bridge and I see near misses every day.",
-    "lat": 50.047880,
-    "lng": 19.933270,
-    "upvotes": 54,
-    "days_ago": 210
   },
   {
     "category": "traffic",
     "title": "No crosswalk at Grota-Roweckiego bus stop",
     "description": "There is no pedestrian crossing at the bus stop on ul. Grota-Roweckiego, so people run across four lanes to catch the bus. Students from the nearby dorms do it every morning.",
-    "lat": 50.027020,
-    "lng": 19.915080,
+    "lat": 50.02702,
+    "lng": 19.91508,
     "upvotes": 241,
     "days_ago": 120
   },
@@ -93,8 +39,8 @@
     "category": "traffic",
     "title": "Dangerous crossing near Grota-Roweckiego stop",
     "description": "Pedestrians cross ul. Grota-Roweckiego wherever they can because the nearest zebra crossing is far away. Cars come fast from Ruczaj and someone will get hit.",
-    "lat": 50.027650,
-    "lng": 19.916200,
+    "lat": 50.02765,
+    "lng": 19.9162,
     "upvotes": 37,
     "days_ago": 14
   },
@@ -102,134 +48,35 @@
     "category": "lighting",
     "title": "Dark path to UJ campus on Łojasiewicza",
     "description": "The footpath from ul. Łojasiewicza to the Jagiellonian University campus has no working lights. In winter it is completely dark by 4pm when students leave lectures.",
-    "lat": 50.028450,
-    "lng": 19.905210,
+    "lat": 50.02845,
+    "lng": 19.90521,
     "upvotes": 71,
     "days_ago": 60
-  },
-  {
-    "category": "infrastructure",
-    "title": "Potholes on ul. Kobierzyńska",
-    "description": "Deep potholes have opened up on ul. Kobierzyńska near the junction with Grota-Roweckiego. After rain they fill with water and you can't see how deep they are.",
-    "lat": 50.029350,
-    "lng": 19.911040,
-    "upvotes": 26,
-    "days_ago": 88
-  },
-  {
-    "category": "noise",
-    "title": "Night construction on ul. Bobrzyńskiego",
-    "description": "The building site on ul. Bobrzyńskiego runs concrete mixers past midnight. I thought there were rules about night work in residential areas.",
-    "lat": 50.021040,
-    "lng": 19.899870,
-    "upvotes": 15,
-    "days_ago": 3
-  },
-  {
-    "category": "traffic",
-    "title": "Tour buses parked on sidewalk by Sanctuary",
-    "description": "Pilgrim coaches park on the pavement along ul. Siostry Faustyny next to the Sanktuarium Bożego Miłosierdzia. Pedestrians have to walk in the road.",
-    "lat": 50.019280,
-    "lng": 19.932650,
-    "upvotes": 42,
-    "days_ago": 150
-  },
-  {
-    "category": "cleanliness",
-    "title": "Litter along ul. Zakopiańska in Borek Fałęcki",
-    "description": "The grass verge along ul. Zakopiańska in Borek Fałęcki is covered in bottles and plastic bags. It looks like it hasn't been cleaned since spring.",
-    "lat": 50.006210,
-    "lng": 19.922780,
-    "upvotes": 11,
-    "days_ago": 46
-  },
-  {
-    "category": "safety",
-    "title": "Broken fence at Łagiewniki tram stop",
-    "description": "The barrier between the tram platform and the road on ul. Łagiewnicka is bent and has sharp edges sticking out. Kids waiting for the tram lean on it.",
-    "lat": 50.024150,
-    "lng": 19.939870,
-    "upvotes": 6,
-    "days_ago": 29
-  },
-  {
-    "category": "lighting",
-    "title": "Unlit underpass on ul. Turowicza",
-    "description": "The pedestrian underpass on ul. Turowicza near the Sanctuary has no working lights at all. I avoid it after dark and walk the long way round.",
-    "lat": 50.022560,
-    "lng": 19.935480,
-    "upvotes": 23,
-    "days_ago": 101
-  },
-  {
-    "category": "infrastructure",
-    "title": "Damaged benches in Swoszowice spa park",
-    "description": "Several benches in the Uzdrowisko Swoszowice park have broken slats. Older visitors who come for the spa have nowhere to sit.",
-    "lat": 49.993120,
-    "lng": 19.944350,
-    "upvotes": 17,
-    "days_ago": 190
-  },
-  {
-    "category": "traffic",
-    "title": "Speeding on ul. Myślenicka",
-    "description": "Cars race down ul. Myślenicka through Swoszowice well over the limit. We need a speed camera or at least a raised crossing near the school.",
-    "lat": 49.989200,
-    "lng": 19.942010,
-    "upvotes": 58,
-    "days_ago": 67
   },
   {
     "category": "other",
     "title": "Stray dogs near ul. Kąpielowa",
     "description": "A small pack of stray dogs has been hanging around ul. Kąpielowa by the spa park. They seem hungry and could use help from an animal shelter.",
-    "lat": 49.993640,
-    "lng": 19.945880,
+    "lat": 49.99364,
+    "lng": 19.94588,
     "upvotes": 4,
     "days_ago": 11
-  },
-  {
-    "category": "noise",
-    "title": "Loud music from courtyard on ul. Witosa",
-    "description": "Every evening a group plays loud music from a car parked in the courtyard of the blocks on ul. Witosa in Kurdwanów. It goes on well past 11pm.",
-    "lat": 50.011020,
-    "lng": 19.956010,
-    "upvotes": 31,
-    "days_ago": 21
-  },
-  {
-    "category": "noise",
-    "title": "Late-night parties near Witosa blocks",
-    "description": "Parties on the playground between the blocks on ul. Witosa keep the whole estate awake on Fridays and Saturdays. Police came once but it started again the next week.",
-    "lat": 50.011600,
-    "lng": 19.957100,
-    "upvotes": 9,
-    "days_ago": 6
   },
   {
     "category": "cleanliness",
     "title": "Illegal dumping in Park Duchacki",
     "description": "Someone dumped old furniture and building rubble at the edge of Park Duchacki. It has been sitting there for over a month and is growing.",
-    "lat": 50.020480,
-    "lng": 19.955320,
+    "lat": 50.02048,
+    "lng": 19.95532,
     "upvotes": 85,
     "days_ago": 39
   },
   {
     "category": "infrastructure",
-    "title": "Broken playground on ul. Nowosądecka",
-    "description": "The swings at the playground on ul. Nowosądecka are missing seats and the slide has a crack. Parents have taped it off themselves.",
-    "lat": 50.014150,
-    "lng": 19.962230,
-    "upvotes": 22,
-    "days_ago": 245
-  },
-  {
-    "category": "infrastructure",
     "title": "Flooded underpass at Kraków Prokocim station",
     "description": "After every heavy rain the underpass at Kraków Prokocim station floods ankle-deep. Commuters have to wade through or go around over the tracks.",
-    "lat": 50.025880,
-    "lng": 20.000910,
+    "lat": 50.02588,
+    "lng": 20.00091,
     "upvotes": 158,
     "days_ago": 54
   },
@@ -237,35 +84,17 @@
     "category": "safety",
     "title": "No sidewalk on ul. Bieżanowska",
     "description": "A long stretch of ul. Bieżanowska has no sidewalk, so people walk on the narrow shoulder next to trucks. It is especially dangerous for kids going to school.",
-    "lat": 50.017890,
-    "lng": 20.019850,
+    "lat": 50.01789,
+    "lng": 20.01985,
     "upvotes": 48,
     "days_ago": 175
-  },
-  {
-    "category": "lighting",
-    "title": "Dark path through Park Jerzmanowskich",
-    "description": "The main path through Park Jerzmanowskich in Prokocim has no lights after the old lamps were removed. Joggers and dog walkers use it in the dark every evening.",
-    "lat": 50.017560,
-    "lng": 20.011220,
-    "upvotes": 35,
-    "days_ago": 92
-  },
-  {
-    "category": "other",
-    "title": "Missing bus shelter near University Hospital",
-    "description": "The bus stop on ul. Jakubowskiego by the Szpital Uniwersytecki has no shelter. Patients and elderly visitors wait in the rain and sun with nowhere to sit.",
-    "lat": 50.010850,
-    "lng": 20.003470,
-    "upvotes": 27,
-    "days_ago": 33
   },
   {
     "category": "cleanliness",
     "title": "Trash left on the slopes of Kopiec Kościuszki",
     "description": "After sunny weekends the grass around Kopiec Kościuszki is full of cans, bottles and picnic leftovers. There are not enough bins on the way up.",
-    "lat": 50.054920,
-    "lng": 19.893310,
+    "lat": 50.05492,
+    "lng": 19.89331,
     "upvotes": 66,
     "days_ago": 8
   },
@@ -273,8 +102,8 @@
     "category": "cleanliness",
     "title": "Litter near Kopiec Kościuszki entrance",
     "description": "The area by the entrance gate to Kopiec Kościuszki is covered in litter and the single bin there is always full. Not a great first impression for tourists.",
-    "lat": 50.055500,
-    "lng": 19.894100,
+    "lat": 50.0555,
+    "lng": 19.8941,
     "upvotes": 14,
     "days_ago": 2
   },
@@ -282,18 +111,9 @@
     "category": "infrastructure",
     "title": "Uneven cobblestones on Aleja Waszyngtona",
     "description": "The cobblestones on Aleja Waszyngtona leading up to the mound are sunken and loose in many places. Cyclists and people with prams struggle to get through.",
-    "lat": 50.056320,
-    "lng": 19.899550,
+    "lat": 50.05632,
+    "lng": 19.89955,
     "upvotes": 39,
     "days_ago": 300
-  },
-  {
-    "category": "safety",
-    "title": "Cyclists speeding on Błonia path",
-    "description": "Cyclists fly along the shared path around Błonia without slowing down for pedestrians. There have already been a few collisions with walkers and kids.",
-    "lat": 50.059420,
-    "lng": 19.913820,
-    "upvotes": 102,
-    "days_ago": 57
   }
 ]

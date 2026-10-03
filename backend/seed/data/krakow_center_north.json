@@ -3,53 +3,26 @@
     "category": "noise",
     "title": "Street performers with amplifiers on Rynek",
     "description": "Every evening there are buskers on Rynek Główny with huge speakers right under our windows. It goes on well past 10pm and you can hear it through closed windows.",
-    "lat": 50.061400,
-    "lng": 19.936800,
+    "lat": 50.0614,
+    "lng": 19.9368,
     "upvotes": 47,
     "days_ago": 23
-  },
-  {
-    "category": "cleanliness",
-    "title": "Overflowing bins on ul. Floriańska",
-    "description": "The bins along ul. Floriańska are full by midday and tourists just pile cups and food boxes next to them. Seagulls and pigeons spread it all over the street.",
-    "lat": 50.063900,
-    "lng": 19.939700,
-    "upvotes": 28,
-    "days_ago": 6
   },
   {
     "category": "traffic",
     "title": "Delivery vans blocking ul. Grodzka",
     "description": "Delivery vans park on ul. Grodzka well after the allowed morning window. Pedestrians and rickshaws have to squeeze around them in the middle of the street.",
-    "lat": 50.057800,
-    "lng": 19.938100,
+    "lat": 50.0578,
+    "lng": 19.9381,
     "upvotes": 64,
     "days_ago": 41
-  },
-  {
-    "category": "lighting",
-    "title": "Broken lamps on Planty near Barbakan",
-    "description": "Three lamps on the Planty path between Barbakan and ul. Basztowa have been out for over a week. The stretch is completely dark after 6pm.",
-    "lat": 50.065300,
-    "lng": 19.941200,
-    "upvotes": 19,
-    "days_ago": 12
-  },
-  {
-    "category": "infrastructure",
-    "title": "Loose cobblestones by St. Mary's Basilica",
-    "description": "Several cobblestones next to Kościół Mariacki are loose and wobble when you step on them. I saw an older lady trip there last Sunday.",
-    "lat": 50.061600,
-    "lng": 19.939000,
-    "upvotes": 33,
-    "days_ago": 87
   },
   {
     "category": "noise",
     "title": "Loud bars on Plac Nowy until 3am",
     "description": "The bars around Plac Nowy play music and crowds shout outside until 3am on weekends. Residents of the surrounding tenement houses cannot sleep at all.",
-    "lat": 50.051700,
-    "lng": 19.944500,
+    "lat": 50.0517,
+    "lng": 19.9445,
     "upvotes": 212,
     "days_ago": 140
   },
@@ -57,89 +30,35 @@
     "category": "noise",
     "title": "Late-night music near the Okrąglak kiosks",
     "description": "Someone sets up a speaker next to the zapiekanka windows at the Okrąglak on Plac Nowy almost every night. The bass is still going at 2am.",
-    "lat": 50.051400,
-    "lng": 19.945100,
+    "lat": 50.0514,
+    "lng": 19.9451,
     "upvotes": 38,
     "days_ago": 9
-  },
-  {
-    "category": "cleanliness",
-    "title": "Broken glass on ul. Szeroka after weekends",
-    "description": "Every Monday morning ul. Szeroka is covered in broken bottles near the restaurant gardens. It is dangerous for kids and dogs walking to school.",
-    "lat": 50.053200,
-    "lng": 19.948400,
-    "upvotes": 22,
-    "days_ago": 3
-  },
-  {
-    "category": "safety",
-    "title": "E-scooters speeding on ul. Józefa sidewalk",
-    "description": "Electric scooters fly down the narrow sidewalk on ul. Józefa at full speed. There is no room to step aside and I was nearly hit twice this month.",
-    "lat": 50.051300,
-    "lng": 19.946500,
-    "upvotes": 15,
-    "days_ago": 30
-  },
-  {
-    "category": "traffic",
-    "title": "Taxis double-parking on ul. Krakowska",
-    "description": "Taxis and ride-share cars stop in the tram lane on ul. Krakowska to pick people up. Trams are stuck behind them several times every evening.",
-    "lat": 50.049800,
-    "lng": 19.943300,
-    "upvotes": 11,
-    "days_ago": 55
   },
   {
     "category": "other",
     "title": "Abandoned rental scooters on ul. Estery",
     "description": "A pile of rental scooters has been lying on the pavement at ul. Estery for days. Nobody from the operators has come to collect them.",
-    "lat": 50.051900,
-    "lng": 19.947000,
+    "lat": 50.0519,
+    "lng": 19.947,
     "upvotes": 7,
     "days_ago": 17
-  },
-  {
-    "category": "traffic",
-    "title": "Very long red light at Rondo Grzegórzeckie",
-    "description": "Coming from ul. Grzegórzecka the light at Rondo Grzegórzeckie stays red for ages while the other directions are empty. Traffic backs up all the way to ul. Blich.",
-    "lat": 50.057400,
-    "lng": 19.958300,
-    "upvotes": 41,
-    "days_ago": 200
-  },
-  {
-    "category": "traffic",
-    "title": "Pedestrian signal too short at the roundabout",
-    "description": "The green for pedestrians crossing at Rondo Grzegórzeckie lasts only a few seconds. You cannot make it across with a stroller before it turns red.",
-    "lat": 50.057900,
-    "lng": 19.957600,
-    "upvotes": 26,
-    "days_ago": 48
   },
   {
     "category": "lighting",
     "title": "Dark path through Park Daszyńskiego",
     "description": "The main path across Park Daszyńskiego towards ul. Fabryczna has no working lights. Many people walk there from Galeria Kazimierz in the evening.",
-    "lat": 50.055500,
-    "lng": 19.956600,
+    "lat": 50.0555,
+    "lng": 19.9566,
     "upvotes": 31,
     "days_ago": 18
-  },
-  {
-    "category": "infrastructure",
-    "title": "Cracked pavement on ul. Grzegórzecka",
-    "description": "The sidewalk on ul. Grzegórzecka is cracked and lifted by tree roots. Wheelchair users have to go onto the road.",
-    "lat": 50.058200,
-    "lng": 19.953500,
-    "upvotes": 9,
-    "days_ago": 120
   },
   {
     "category": "safety",
     "title": "Unsafe underpass at Rondo Mogilskie",
     "description": "The pedestrian underpass at Rondo Mogilskie is poorly lit and people often drink there at night. I avoid it after dark and walk the long way around.",
-    "lat": 50.065600,
-    "lng": 19.959700,
+    "lat": 50.0656,
+    "lng": 19.9597,
     "upvotes": 52,
     "days_ago": 77
   },
@@ -147,8 +66,8 @@
     "category": "lighting",
     "title": "Dark path through Park Krakowski",
     "description": "Half of the lamps along the main alley in Park Krakowski don't work. It feels unsafe walking home from ul. Karmelicka in the evening.",
-    "lat": 50.068700,
-    "lng": 19.920200,
+    "lat": 50.0687,
+    "lng": 19.9202,
     "upvotes": 89,
     "days_ago": 34
   },
@@ -156,71 +75,26 @@
     "category": "lighting",
     "title": "Lamps out around the pond in Park Krakowski",
     "description": "The lights around the pond in Park Krakowski have been off for two weeks. Joggers and dog walkers can barely see the path.",
-    "lat": 50.069100,
-    "lng": 19.921100,
+    "lat": 50.0691,
+    "lng": 19.9211,
     "upvotes": 24,
     "days_ago": 5
-  },
-  {
-    "category": "noise",
-    "title": "Night-time tram track works on ul. Królewska",
-    "description": "Grinding work on the tram tracks on ul. Królewska runs from midnight until 4am. Nobody informed residents in advance.",
-    "lat": 50.073000,
-    "lng": 19.917000,
-    "upvotes": 13,
-    "days_ago": 2
-  },
-  {
-    "category": "cleanliness",
-    "title": "Dog waste all over Plac Inwalidów lawns",
-    "description": "The green squares at Plac Inwalidów are full of dog waste. There is only one dog bin and it is always overflowing.",
-    "lat": 50.067500,
-    "lng": 19.925800,
-    "upvotes": 6,
-    "days_ago": 66
-  },
-  {
-    "category": "infrastructure",
-    "title": "Leaking hydrant on ul. Mazowiecka",
-    "description": "A hydrant on ul. Mazowiecka has been leaking water onto the sidewalk since yesterday. It will turn into ice if it gets cold.",
-    "lat": 50.077100,
-    "lng": 19.921400,
-    "upvotes": 4,
-    "days_ago": 1
-  },
-  {
-    "category": "safety",
-    "title": "Cars parked on crosswalk at ul. Czarnowiejska",
-    "description": "Drivers park right on the zebra crossing on ul. Czarnowiejska near AGH. Students step out between cars and drivers can't see them.",
-    "lat": 50.066800,
-    "lng": 19.917800,
-    "upvotes": 29,
-    "days_ago": 15
   },
   {
     "category": "infrastructure",
     "title": "Deep potholes on ul. Bronowicka",
     "description": "There are several deep potholes on ul. Bronowicka between ul. Rydla and the tram stop. Cyclists have to swerve into traffic to avoid them.",
-    "lat": 50.081000,
-    "lng": 19.897000,
+    "lat": 50.081,
+    "lng": 19.897,
     "upvotes": 163,
     "days_ago": 95
-  },
-  {
-    "category": "infrastructure",
-    "title": "Sunken asphalt near Bronowicka tram stop",
-    "description": "The road surface has sunk next to the tram stop on ul. Bronowicka and fills with water every time it rains. Buses splash everyone waiting at the stop.",
-    "lat": 50.081800,
-    "lng": 19.896300,
-    "upvotes": 17,
-    "days_ago": 11
   },
   {
     "category": "traffic",
     "title": "No crosswalk at bus stop on ul. Armii Krajowej",
     "description": "People get off the bus on ul. Armii Krajowej and run across four lanes because the nearest crossing is far away. Someone will get hurt there.",
-    "lat": 50.077200,
-    "lng": 19.898700,
+    "lat": 50.0772,
+    "lng": 19.8987,
     "upvotes": 36,
     "days_ago": 160
   },
@@ -228,72 +102,18 @@
     "category": "cleanliness",
     "title": "Illegal dumping by Bronowice Małe tram loop",
     "description": "Someone dumped old furniture and building rubble in the bushes next to the Bronowice Małe tram loop. The pile keeps growing every week.",
-    "lat": 50.083100,
-    "lng": 19.881400,
+    "lat": 50.0831,
+    "lng": 19.8814,
     "upvotes": 12,
     "days_ago": 21
-  },
-  {
-    "category": "other",
-    "title": "Bench removed at Rondo Ofiar Katynia stop",
-    "description": "The only bench at the bus stop by Rondo Ofiar Katynia was removed and never replaced. Elderly passengers have nowhere to sit while waiting.",
-    "lat": 50.087700,
-    "lng": 19.892800,
-    "upvotes": 3,
-    "days_ago": 200
-  },
-  {
-    "category": "noise",
-    "title": "Construction starting at 6am on ul. Opolska",
-    "description": "The building site on ul. Opolska starts drilling and unloading trucks before 6am, even on Saturdays. The whole housing estate wakes up to it.",
-    "lat": 50.093400,
-    "lng": 19.930500,
-    "upvotes": 44,
-    "days_ago": 14
-  },
-  {
-    "category": "lighting",
-    "title": "Flickering streetlights on ul. Pachońskiego",
-    "description": "The streetlights along ul. Pachońskiego near the Azory blocks keep flickering on and off all night. Some of them stay completely dark.",
-    "lat": 50.094100,
-    "lng": 19.920400,
-    "upvotes": 8,
-    "days_ago": 73
   },
   {
     "category": "traffic",
     "title": "Ambulance access blocked on ul. Prądnicka",
     "description": "Cars park along ul. Prądnicka by Szpital im. Jana Pawła II and block the access lane for ambulances. I watched an ambulance wait several minutes to get in.",
-    "lat": 50.084400,
-    "lng": 19.932300,
+    "lat": 50.0844,
+    "lng": 19.9323,
     "upvotes": 178,
     "days_ago": 260
-  },
-  {
-    "category": "safety",
-    "title": "Speeding cars on ul. Dobrego Pasterza",
-    "description": "Drivers race down ul. Dobrego Pasterza right past the school and the church. We need speed bumps or a speed camera here.",
-    "lat": 50.088200,
-    "lng": 19.968400,
-    "upvotes": 27,
-    "days_ago": 37
-  },
-  {
-    "category": "cleanliness",
-    "title": "Overflowing recycling bins on ul. Lublańska",
-    "description": "The recycling containers by the blocks on ul. Lublańska haven't been emptied in two weeks. Plastic and cardboard are blowing all over the parking lot.",
-    "lat": 50.083300,
-    "lng": 19.962800,
-    "upvotes": 10,
-    "days_ago": 19
-  },
-  {
-    "category": "infrastructure",
-    "title": "Broken sidewalk slabs on ul. Żmujdzka",
-    "description": "Many sidewalk slabs on ul. Żmujdzka are broken or missing, leaving holes along the path. It's really hard to push a stroller or shopping cart there.",
-    "lat": 50.087000,
-    "lng": 19.957000,
-    "upvotes": 5,
-    "days_ago": 150
   }
 ]
