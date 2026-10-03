@@ -41,6 +41,22 @@
         }
       ],
       [
+        "expo-image-picker",
+        {
+          "photosPermission": "Hubmi używa zdjęć, żeby dodać je do zgłoszenia.",
+          "cameraPermission": "Hubmi używa aparatu, żeby zrobić zdjęcie do zgłoszenia.",
+          "microphonePermission": false
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Hubmi używa aparatu, żeby zrobić zdjęcie do zgłoszenia.",
+          "recordAudioAndroid": false,
+          "barcodeScannerEnabled": false
+        }
+      ],
+      [
         "expo-splash-screen",
         {
           "backgroundColor": "#208AEF",

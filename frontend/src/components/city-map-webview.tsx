@@ -4,6 +4,7 @@ import { StyleSheet } from 'react-native'
 import { WebView } from 'react-native-webview'
 
 import { CITY_ZOOM, KRAKOW_CENTER, MAPLIBRE_WEB_VERSION, OPENFREEMAP_STYLE, USER_ZOOM } from '@/constants/map'
+import { useMapViewportStore } from '@/stores/map-viewport-store'
 
 const MAPLIBRE_BASE = `https://cdn.jsdelivr.net/npm/maplibre-gl@${MAPLIBRE_WEB_VERSION}/dist`
 
@@ -23,7 +24,9 @@ function mapHtml() {
   <div id="map"></div>
   <script>
     window.__pendingUser = null;
+    window.__pendingFly = null;
     window.moveToUser = function (lng, lat) { window.__pendingUser = [lng, lat]; };
+    window.flyToPoint = function (lng, lat, zoom) { window.__pendingFly = [lng, lat, zoom]; };
   </script>
   <script type="module">
     import * as maplibregl from '${MAPLIBRE_BASE}/maplibre-gl.mjs';
@@ -44,13 +47,27 @@ function mapHtml() {
       if (marker) marker.remove();
       marker = new maplibregl.Marker({ element: dot() }).setLngLat([lng, lat]).addTo(map);
     };
+    const postCenter = () => {
+      const center = map.getCenter();
+      if (window.ReactNativeWebView) {
+        window.ReactNativeWebView.postMessage(JSON.stringify({ lng: center.lng, lat: center.lat }));
+      }
+    };
     window.moveToUser = (lng, lat) => {
       if (map.loaded()) showUser(lng, lat);
       else map.once('load', () => showUser(lng, lat));
     };
+    window.flyToPoint = (lng, lat, zoom) => {
+      const go = () => map.flyTo({ center: [lng, lat], zoom });
+      if (map.loaded()) go();
+      else map.once('load', go);
+    };
+    map.on('moveend', postCenter);
     map.on('load', () => {
       map.resize();
       if (window.__pendingUser) window.moveToUser(window.__pendingUser[0], window.__pendingUser[1]);
+      if (window.__pendingFly) window.flyToPoint(window.__pendingFly[0], window.__pendingFly[1], window.__pendingFly[2]);
+      postCenter();
     });
   </script>
 </body>
@@ -60,10 +77,15 @@ function mapHtml() {
 export function CityMap() {
   const webViewRef = useRef<WebView>(null)
   const coords = useRef<[number, number] | null>(null)
+  const flyRequest = useMapViewportStore((state) => state.flyRequest)
 
   const pushLocation = useCallback((longitude: number, latitude: number) => {
     coords.current = [longitude, latitude]
     webViewRef.current?.injectJavaScript(`window.moveToUser(${longitude}, ${latitude}); true;`)
+  }, [])
+
+  const pushFly = useCallback((longitude: number, latitude: number, zoom: number) => {
+    webViewRef.current?.injectJavaScript(`window.flyToPoint(${longitude}, ${latitude}, ${zoom}); true;`)
   }, [])
 
   useEffect(() => {
@@ -81,6 +103,12 @@ export function CityMap() {
     }
   }, [pushLocation])
 
+  useEffect(() => {
+    if (!flyRequest) return
+    const [longitude, latitude] = flyRequest.center
+    pushFly(longitude, latitude, flyRequest.zoom)
+  }, [flyRequest, pushFly])
+
   return (
     <WebView
       ref={webViewRef}
@@ -96,10 +124,26 @@ export function CityMap() {
       allowsLinkPreview={false}
       showsHorizontalScrollIndicator={false}
       showsVerticalScrollIndicator={false}
+      onMessage={(event) => {
+        try {
+          const data = JSON.parse(event.nativeEvent.data) as { lng?: number; lat?: number }
+          if (typeof data.lng !== 'number' || typeof data.lat !== 'number') return
+          useMapViewportStore.getState().setCenter([data.lng, data.lat])
+        } catch {
+          // Map messages are JSON coordinates. Ignore anything else.
+        }
+      }}
       onLoadEnd={() => {
         const pending = coords.current
-        if (!pending) return
-        webViewRef.current?.injectJavaScript(`window.moveToUser(${pending[0]}, ${pending[1]}); true;`)
+        if (pending) {
+          webViewRef.current?.injectJavaScript(`window.moveToUser(${pending[0]}, ${pending[1]}); true;`)
+        }
+        const fly = useMapViewportStore.getState().flyRequest
+        if (fly) {
+          webViewRef.current?.injectJavaScript(
+            `window.flyToPoint(${fly.center[0]}, ${fly.center[1]}, ${fly.zoom}); true;`,
+          )
+        }
       }}
     />
   )

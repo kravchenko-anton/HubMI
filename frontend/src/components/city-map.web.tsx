@@ -2,14 +2,17 @@ import { useEffect, useRef, useState } from 'react'
 import { StyleSheet, Text, View } from 'react-native'
 
 import { CITY_ZOOM, KRAKOW_CENTER, MAPLIBRE_WEB_VERSION, OPENFREEMAP_STYLE, USER_ZOOM } from '@/constants/map'
+import { useMapViewportStore } from '@/stores/map-viewport-store'
 
 const MAPLIBRE_BASE = `https://cdn.jsdelivr.net/npm/maplibre-gl@${MAPLIBRE_WEB_VERSION}/dist`
 
 type WebMap = {
   remove: () => void
   resize: () => void
+  loaded: () => boolean
   flyTo: (options: { center: [number, number]; zoom: number }) => void
-  on: (event: 'load', handler: () => void) => void
+  getCenter: () => { lng: number; lat: number }
+  on: (event: 'load' | 'moveend', handler: () => void) => void
 }
 
 type WebMarker = {
@@ -96,8 +99,29 @@ export function CityMap() {
     if (!node) return
 
     let cancelled = false
+    let loaded = false
     let map: WebMap | undefined
     let marker: WebMarker | undefined
+    let lastFlyId = useMapViewportStore.getState().flyRequest?.id ?? 0
+
+    const publishCenter = () => {
+      if (!map) return
+      const center = map.getCenter()
+      useMapViewportStore.getState().setCenter([center.lng, center.lat])
+    }
+
+    const flyToRequest = () => {
+      const request = useMapViewportStore.getState().flyRequest
+      if (!map || !loaded || !request) return
+      map.flyTo({ center: request.center, zoom: request.zoom })
+    }
+
+    const unsubscribe = useMapViewportStore.subscribe((state) => {
+      const id = state.flyRequest?.id
+      if (!id || id === lastFlyId) return
+      lastFlyId = id
+      flyToRequest()
+    })
 
     loadMapLibre()
       .then((maplibregl) => {
@@ -108,12 +132,20 @@ export function CityMap() {
           center: KRAKOW_CENTER,
           zoom: CITY_ZOOM,
         })
+        map.on('moveend', publishCenter)
         map.on('load', () => {
+          loaded = true
           map?.resize()
+          publishCenter()
+          flyToRequest()
           if (!navigator.geolocation) return
           navigator.geolocation.getCurrentPosition((position) => {
             if (cancelled || !map) return
             const center: [number, number] = [position.coords.longitude, position.coords.latitude]
+            if (useMapViewportStore.getState().trackingPaused) {
+              marker = new maplibregl.Marker({ element: userDot() }).setLngLat(center).addTo(map)
+              return
+            }
             map.flyTo({ center, zoom: USER_ZOOM })
             marker = new maplibregl.Marker({ element: userDot() }).setLngLat(center).addTo(map)
           })
@@ -125,6 +157,7 @@ export function CityMap() {
 
     return () => {
       cancelled = true
+      unsubscribe()
       marker?.remove()
       map?.remove()
     }

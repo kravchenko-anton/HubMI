@@ -21,6 +21,7 @@ export function MapReportButton({ animatedPosition }: { animatedPosition: Shared
   const showReports = useMapSheetStore((state) => state.showReports)
   const showSearch = useMapSheetStore((state) => state.showSearch)
   const reportsOpen = content === 'reports'
+  const reportFlow = content === 'compose' || content === 'pick-location'
   const [hidden, setHidden] = useState(false)
   const topInset = insets.top
 
@@ -41,6 +42,8 @@ export function MapReportButton({ animatedPosition }: { animatedPosition: Shared
     },
     [topInset],
   )
+
+  if (reportFlow) return null
 
   return (
     <Animated.View

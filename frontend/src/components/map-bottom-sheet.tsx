@@ -5,6 +5,7 @@ import { Keyboard, Pressable, StyleSheet, Text, useWindowDimensions, View } from
 import type { SharedValue } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
+import { PickLocationDock, ReportComposer } from '@/components/report-composer'
 import { useMapSheetStore } from '@/stores/map-sheet-store'
 
 const SHEET_BACKGROUND = '#FEFDFF';
@@ -53,7 +54,8 @@ export function MapBottomSheet({ animatedPosition }: { animatedPosition: SharedV
   const { height } = useWindowDimensions();
   const content = useMapSheetStore((state) => state.content);
   const searchOpen = useMapSheetStore((state) => state.searchOpen);
-  const sheetKey = content === 'reports' ? 'reports' : searchOpen ? 'search-open' : 'search';
+  const sheetKey = content === 'search' ? (searchOpen ? 'search-open' : 'search') : content;
+  const paddingBottom = SHEET_CONTENT_PADDING_BOTTOM + insets.bottom;
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -75,11 +77,19 @@ export function MapBottomSheet({ animatedPosition }: { animatedPosition: SharedV
       keyboardBlurBehavior="restore"
       backgroundStyle={styles.background}
       handleIndicatorStyle={styles.handle}>
-      <BottomSheetView
-        key={sheetKey}
-        style={[styles.content, { paddingBottom: SHEET_CONTENT_PADDING_BOTTOM + insets.bottom }]}>
-        {content === 'reports' ? <ReportsContent /> : <SearchContent />}
-      </BottomSheetView>
+      {content === 'compose' ? (
+        <ReportComposer paddingBottom={paddingBottom} />
+      ) : (
+        <BottomSheetView key={sheetKey} style={[styles.content, { paddingBottom }]}>
+          {content === 'reports' ? (
+            <ReportsContent />
+          ) : content === 'pick-location' ? (
+            <PickLocationDock />
+          ) : (
+            <SearchContent />
+          )}
+        </BottomSheetView>
+      )}
     </BottomSheet>
   );
 }
@@ -225,7 +235,7 @@ function SearchContent() {
 
 function ReportsContent() {
   const showSearch = useMapSheetStore((state) => state.showSearch);
-  const submitReport = useMapSheetStore((state) => state.submitReport);
+  const startReport = useMapSheetStore((state) => state.startReport);
 
   return (
     <View>
@@ -251,7 +261,7 @@ function ReportsContent() {
             key={item.id}
             accessibilityRole="button"
             accessibilityLabel={item.label}
-            onPress={() => submitReport(item.label)}
+            onPress={() => startReport(item)}
             style={({ pressed }) => [styles.cell, pressed && styles.pressed]}>
             <View style={styles.iconCircle}>
               <Text style={styles.emoji}>{item.emoji}</Text>
