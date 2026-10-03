@@ -14,6 +14,7 @@ from app.db import get_conn, init_db
 
 EARTH_RADIUS_M = 6_371_000
 MEDIA_DIR = Path(__file__).resolve().parent.parent / "media"
+HIDDEN_BELOW = -10
 
 
 class Category(str, Enum):
@@ -107,8 +108,8 @@ def query_issues(
     """Issues inside the map rectangle, most upvoted first."""
     if min_lat > max_lat or min_lng > max_lng:
         raise HTTPException(400, "min values must be <= max values")
-    sql = "SELECT * FROM issues WHERE lat BETWEEN ? AND ? AND lng BETWEEN ? AND ?"
-    params: list = [min_lat, max_lat, min_lng, max_lng]
+    sql = "SELECT * FROM issues WHERE upvotes >= ? AND lat BETWEEN ? AND ? AND lng BETWEEN ? AND ?"
+    params: list = [HIDDEN_BELOW, min_lat, max_lat, min_lng, max_lng]
     if category:
         sql += " AND category = ?"
         params.append(category.value)
@@ -130,8 +131,8 @@ def similar_issues(
     """Nearby issues to show before submitting a new one, to avoid duplicates."""
     dlat = math.degrees(radius_m / EARTH_RADIUS_M)
     dlng = dlat / max(math.cos(math.radians(lat)), 1e-6)
-    sql = "SELECT * FROM issues WHERE lat BETWEEN ? AND ? AND lng BETWEEN ? AND ?"
-    params: list = [lat - dlat, lat + dlat, lng - dlng, lng + dlng]
+    sql = "SELECT * FROM issues WHERE upvotes >= ? AND lat BETWEEN ? AND ? AND lng BETWEEN ? AND ?"
+    params: list = [HIDDEN_BELOW, lat - dlat, lat + dlat, lng - dlng, lng + dlng]
     if category:
         sql += " AND category = ?"
         params.append(category.value)
@@ -156,6 +157,16 @@ def get_issue(issue_id: int):
 def upvote_issue(issue_id: int):
     with get_conn() as conn:
         cur = conn.execute("UPDATE issues SET upvotes = upvotes + 1 WHERE id = ?", (issue_id,))
+    if cur.rowcount == 0:
+        raise HTTPException(404, "Issue not found")
+    return fetch_issue(issue_id)
+
+
+@app.post("/issues/{issue_id}/downvote", response_model=Issue)
+def downvote_issue(issue_id: int):
+    """Removes one vote; the count can go negative and hides the issue below HIDDEN_BELOW."""
+    with get_conn() as conn:
+        cur = conn.execute("UPDATE issues SET upvotes = upvotes - 1 WHERE id = ?", (issue_id,))
     if cur.rowcount == 0:
         raise HTTPException(404, "Issue not found")
     return fetch_issue(issue_id)

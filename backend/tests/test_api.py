@@ -26,5 +26,20 @@ def test_flow():
         similar = c.get("/issues/similar", params={"lat": 52.2298, "lng": 21.0123, "category": "traffic"}).json()
         assert [i["id"] for i in similar] == [a["id"]]
 
+        assert c.post(f"/issues/{a['id']}/downvote").json()["upvotes"] == 0
+        assert c.post(f"/issues/{a['id']}/downvote").json()["upvotes"] == -1
+
+        for _ in range(9):
+            c.post(f"/issues/{a['id']}/downvote")
+        rect_params = {"min_lat": 52.2, "max_lat": 52.3, "min_lng": 21.0, "max_lng": 21.1}
+        assert a["id"] in [i["id"] for i in c.get("/issues", params=rect_params).json()]  # at -10
+
+        c.post(f"/issues/{a['id']}/downvote")  # -11: hidden
+        assert a["id"] not in [i["id"] for i in c.get("/issues", params=rect_params).json()]
+        similar = c.get("/issues/similar", params={"lat": 52.2298, "lng": 21.0123, "category": "traffic"}).json()
+        assert similar == []
+        assert c.get(f"/issues/{a['id']}").json()["upvotes"] == -11
+
         assert c.post("/issues/9999/upvote").status_code == 404
+        assert c.post("/issues/9999/downvote").status_code == 404
     os.remove("test_hubmi.db")
