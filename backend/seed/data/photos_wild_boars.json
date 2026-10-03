@@ -1,0 +1,42 @@
+[
+  {
+    "category": "safety",
+    "title": "Wild boar approaching a resident carrying shopping on ul. Jesionowa",
+    "description": "This morning a large boar came out of the bushes on ul. Jesionowa and walked straight across the grass towards a neighbour coming back from the shop with a bag. He had to stand still and wait until it turned away. They clearly smell food and are no longer afraid of people, so please send someone before a child or a dog walker gets hurt.",
+    "lat": 50.063300,
+    "lng": 19.880500,
+    "image_url": "/media/hog-goes-to-person.jpg",
+    "upvotes": 187,
+    "days_ago": 12
+  },
+  {
+    "category": "safety",
+    "title": "Sounder of five boars on the pavement next to waste containers",
+    "description": "Five wild boars were walking along the pavement on ul. Królowej Jadwigi in Wola Justowska, right by the forest edge and the green waste container. Two of them were digging under the trees while the rest blocked the whole footpath. People walk to the bus stop here every day; the bins need to be secured and the city should finally deal with the herd.",
+    "lat": 50.062200,
+    "lng": 19.879200,
+    "image_url": "/media/hogs-on-pedestrian.jpg",
+    "upvotes": 94,
+    "days_ago": 47
+  },
+  {
+    "category": "safety",
+    "title": "Four wild boars at a street corner crossing at night",
+    "description": "Around 11 pm four boars were rooting along the pavement at the corner by the zebra crossing on ul. Księcia Józefa in Bielany. Even under the street lamps you barely notice them until you are a few metres away. Walking home from the tram at night has become genuinely scary.",
+    "lat": 50.047600,
+    "lng": 19.860500,
+    "image_url": "/media/hogs-on-the-road.jpg",
+    "upvotes": 126,
+    "days_ago": 5
+  },
+  {
+    "category": "traffic",
+    "title": "Wild boar walking along traffic lane on al. Armii Krajowej",
+    "description": "A single boar was wandering down the middle of a lane on al. Armii Krajowej near Bronowice while cars were moving on the other side and the lights had just turned green. Drivers had to brake hard to avoid hitting it. Someone is going to have a serious collision here if nothing is done.",
+    "lat": 50.074500,
+    "lng": 19.903500,
+    "image_url": "/media/hogs-on-the-roads.jpg",
+    "upvotes": 71,
+    "days_ago": 88
+  }
+]

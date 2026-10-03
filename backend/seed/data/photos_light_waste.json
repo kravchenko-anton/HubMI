@@ -1,0 +1,32 @@
+[
+  {
+    "category": "lighting",
+    "title": "Pitch-dark lane under trees leading to ul. Szeroka",
+    "description": "The short lane under the trees by the old cemetery wall at the north end of ul. Szeroka in Kazimierz is completely dark at night. The square ahead is bright with restaurant gardens, but the last stretch of the path has no working lamp, so you can't see the uneven surface or anyone standing in the bushes. Please install or repair a street light here, lots of tourists and residents walk this way late.",
+    "lat": 50.052900,
+    "lng": 19.947600,
+    "image_url": "/media/not-enough-light-on-the-street.webp",
+    "upvotes": 143,
+    "days_ago": 112
+  },
+  {
+    "category": "cleanliness",
+    "title": "Overflowing concrete bin with bags and cardboard in the snow",
+    "description": "The round concrete bin next to the parking lot on ul. Dobrego Pasterza in Prądnik Czerwony is overflowing again, with plastic bags and bottles piled on top and a torn cardboard box left beside it in the snow. It looks like nobody has emptied it since the snowfall started. Could the collection be more frequent in winter or a bigger container be placed here?",
+    "lat": 50.088000,
+    "lng": 19.969000,
+    "image_url": "/media/overfilledrubishban.jpeg",
+    "upvotes": 37,
+    "days_ago": 9
+  },
+  {
+    "category": "cleanliness",
+    "title": "Full street bin and takeaway bags dumped by crosswalk",
+    "description": "The bin next to the parking meter on ul. Limanowskiego in Podgórze is stuffed full, and paper takeaway bags, food scraps and plastic are lying on the pavement and right on the zebra crossing. This happens every weekend in front of these graffiti-covered tenements. Please empty this bin more often and clean up the crossing.",
+    "lat": 50.042500,
+    "lng": 19.954500,
+    "image_url": "/media/waste-on-the-road-close-to-bin.jpg",
+    "upvotes": 4,
+    "days_ago": 3
+  }
+]

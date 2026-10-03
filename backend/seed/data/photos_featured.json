@@ -1,0 +1,22 @@
+[
+  {
+    "category": "traffic",
+    "title": "No crosswalk at the KFC entrance",
+    "description": "People cross the road between the KFC parking lot and the bus stop every day, but there is no zebra crossing or traffic island. Cars come fast around the bend.",
+    "lat": 50.021520,
+    "lng": 19.916480,
+    "image_url": "/media/no-cross-walk.jpg",
+    "upvotes": 361,
+    "days_ago": 120
+  },
+  {
+    "category": "cleanliness",
+    "title": "Garbage bags dumped on the grass by the fence",
+    "description": "Someone left a pile of black bin bags, cardboard and a broken chair on the lawn next to the estate fence. It has been there for weeks and keeps growing.",
+    "lat": 50.090480,
+    "lng": 19.927550,
+    "image_url": "/media/waste-on-grass.jpg",
+    "upvotes": 316,
+    "days_ago": 21
+  }
+]

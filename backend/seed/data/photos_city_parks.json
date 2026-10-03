@@ -1,0 +1,42 @@
+[
+  {
+    "category": "safety",
+    "title": "Vistula flooding the boulevards below Wawel Castle",
+    "description": "The Vistula has risen over the riverbank below Wawel and is already covering the grass and the lower path of Bulwar Czerwieński, with lamp posts standing in water. Floating debris and litter are piling up around the moored tourist boats, and people are still walking right along the edge. Please close the lower boulevard and put up warning signs until the water goes down.",
+    "lat": 50.051000,
+    "lng": 19.932500,
+    "image_url": "/media/flood-in-krakow-in-main-city.jpg",
+    "upvotes": 229,
+    "days_ago": 12
+  },
+  {
+    "category": "cleanliness",
+    "title": "Tags sprayed over painted mural on yellow wall",
+    "description": "The mural of the man in the bowler hat next to the 'Kraków UNESCO City of Literature' plaque on ul. Lipowa in Zabłocie has been covered with black and white tags, including right across his face. The rest of the wall is full of chrome throw-ups as well. Could the city clean off the tags and maybe restore the original artwork?",
+    "lat": 50.047500,
+    "lng": 19.961000,
+    "image_url": "/media/grafiti-in-krakow.jpg",
+    "upvotes": -5,
+    "days_ago": 37
+  },
+  {
+    "category": "cleanliness",
+    "title": "Pond surface covered with thick green algae and duckweed",
+    "description": "Almost the whole surface of Zalew Nowohucki near the walking path is covered with a thick green layer of algae and duckweed, with only small patches of open water left. It starts to smell on warm days and the water clearly isn't getting any oxygen. Please check the water quality and clean the reservoir before the summer gets worse.",
+    "lat": 50.070500,
+    "lng": 20.028500,
+    "image_url": "/media/over-grown-krakow-lake.jpg",
+    "upvotes": 46,
+    "days_ago": 64
+  },
+  {
+    "category": "infrastructure",
+    "title": "Fallen chestnut tree trunk crushed a park bench",
+    "description": "A large chestnut tree came down in the Planty next to Collegium Novum and its trunk is lying across a green bench, which is now broken. Branches cover the paved path, so pedestrians have to squeeze around it. Please remove the tree, replace the bench and check whether the neighbouring trees are safe.",
+    "lat": 50.061300,
+    "lng": 19.932700,
+    "image_url": "/media/tree-broke-bench.jpg",
+    "upvotes": 103,
+    "days_ago": 3
+  }
+]

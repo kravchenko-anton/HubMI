@@ -1,0 +1,42 @@
+[
+  {
+    "category": "infrastructure",
+    "title": "Unusable wheelchair ramp strips on entrance stairs",
+    "description": "The entrance to the pavilion at os. Centrum C in Nowa Huta has two narrow concrete strips laid over the stairs and calling it a ramp. They are far too steep and too close together for any wheelchair or even a pram, and there is only a railing on one side. My neighbour in a wheelchair simply cannot get into the building on her own.",
+    "lat": 50.074300,
+    "lng": 20.038900,
+    "image_url": "/media/broken-pandus-in-krakow-for-wheelchair.jpg",
+    "upvotes": 247,
+    "days_ago": 18
+  },
+  {
+    "category": "infrastructure",
+    "title": "Steep granite 'ramp' strips on stairs to shopping passage",
+    "description": "The stairs up to the office and shop passage on ul. Pawia, opposite Galeria Krakowska, have two granite strips that are supposed to be a ramp, but the slope is the same as the steps themselves. When wet they are slippery as ice, and there is a second flight of stairs right after the landing. Nobody in a wheelchair can use this, please install a proper ramp or a lift.",
+    "lat": 50.067100,
+    "lng": 19.947400,
+    "image_url": "/media/not-assessible-pandus.jpg",
+    "upvotes": 163,
+    "days_ago": 41
+  },
+  {
+    "category": "lighting",
+    "title": "Street lamp not working next to new houses at night",
+    "description": "One of the street lamps on ul. Kliny-Zacisze, right by the new semi-detached houses, has been completely dark for weeks while the next one further down still works. The whole stretch is pitch black in the evening, and wild boars come down here from the fields almost every night, so walking home without light is really unsafe. Please send someone to repair it.",
+    "lat": 49.998900,
+    "lng": 19.924300,
+    "image_url": "/media/hog-in-krakow.jpg",
+    "upvotes": 58,
+    "days_ago": 7
+  },
+  {
+    "category": "safety",
+    "title": "Herd of wild boars crossing the road at a zebra crossing",
+    "description": "Around 11 pm a herd of at least ten wild boars walked across the zebra crossing on ul. Czerwone Maki, right by the office buildings, and a car had to brake hard to stop in time. This is not the first time I have seen them here in Ruczaj, they come out of the green areas along the street every few nights. Someone is going to get hurt, the city needs to do something about this.",
+    "lat": 50.022500,
+    "lng": 19.897800,
+    "image_url": "/media/hogs-on-crosswalk.jpg",
+    "upvotes": 112,
+    "days_ago": 3
+  }
+]
