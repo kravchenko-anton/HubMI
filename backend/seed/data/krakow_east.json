@@ -1,0 +1,290 @@
+[
+  {
+    "category": "traffic",
+    "title": "No safe crossing at Plac Centralny",
+    "description": "Crossing from the south side of Plac Centralny to the tram stop means dodging cars coming off the roundabout. There is no proper zebra where everyone actually walks, and elderly residents are scared to cross.",
+    "lat": 50.071950,
+    "lng": 20.037450,
+    "upvotes": 212,
+    "days_ago": 140
+  },
+  {
+    "category": "traffic",
+    "title": "Pedestrians stranded at Plac Centralny tram stop",
+    "description": "Getting off the tram at Plac Centralny you have to wait ages on a tiny island while cars circle the square. The light for pedestrians is far too short.",
+    "lat": 50.072400,
+    "lng": 20.038100,
+    "upvotes": 47,
+    "days_ago": 12
+  },
+  {
+    "category": "lighting",
+    "title": "Dark path through Park Lotników",
+    "description": "The main walking path in Park Lotników Polskich is completely dark after 18:00 in autumn. Several lamps between the pond and al. Jana Pawła II have not worked for weeks.",
+    "lat": 50.073000,
+    "lng": 19.995000,
+    "upvotes": 88,
+    "days_ago": 60
+  },
+  {
+    "category": "lighting",
+    "title": "Broken lamps near park playground",
+    "description": "Two street lamps next to the playground in Park Lotników Polskich are out. Parents walking home with kids in the evening can barely see the path.",
+    "lat": 50.073800,
+    "lng": 19.996200,
+    "upvotes": 14,
+    "days_ago": 5
+  },
+  {
+    "category": "cleanliness",
+    "title": "Litter piling up at Zalew Nowohucki",
+    "description": "After every warm weekend the shore of Zalew Nowohucki is covered with bottles, packaging and leftover grill trays. Nobody seems to clean it until Wednesday.",
+    "lat": 50.069800,
+    "lng": 20.025000,
+    "upvotes": 63,
+    "days_ago": 30
+  },
+  {
+    "category": "cleanliness",
+    "title": "Overflowing bins by the lagoon",
+    "description": "The bins along the walking path around Zalew Nowohucki are full and rubbish is blowing into the water. Please empty them more often or add bigger ones.",
+    "lat": 50.070500,
+    "lng": 20.025900,
+    "upvotes": 9,
+    "days_ago": 3
+  },
+  {
+    "category": "noise",
+    "title": "Night tram works at Rondo Mogilskie",
+    "description": "Track works at Rondo Mogilskie run past midnight with grinding and reversing alarms. Residents of ul. Mogilska have not slept properly for a week.",
+    "lat": 50.066500,
+    "lng": 19.960500,
+    "upvotes": 31,
+    "days_ago": 21
+  },
+  {
+    "category": "noise",
+    "title": "Constant roadwork noise near Mogilska",
+    "description": "Heavy machinery near Rondo Mogilskie starts at 5 in the morning, even on Saturdays. Is there any permit for working at these hours?",
+    "lat": 50.067200,
+    "lng": 19.961300,
+    "upvotes": 6,
+    "days_ago": 2
+  },
+  {
+    "category": "infrastructure",
+    "title": "Broken paving slabs on al. Róż",
+    "description": "Many slabs on al. Róż are loose or lifted by tree roots, especially near the fountain. I have already seen two people trip there this month.",
+    "lat": 50.074600,
+    "lng": 20.036400,
+    "upvotes": 37,
+    "days_ago": 95
+  },
+  {
+    "category": "safety",
+    "title": "Groups drinking in os. Złotego Wieku courtyard",
+    "description": "Every evening a group gathers on the benches in the courtyard of os. Złotego Wieku, drinking and shouting at passers-by. Residents are afraid to walk through after dark.",
+    "lat": 50.095100,
+    "lng": 20.001200,
+    "upvotes": 22,
+    "days_ago": 44
+  },
+  {
+    "category": "traffic",
+    "title": "Speeding on ul. Bora-Komorowskiego",
+    "description": "Cars race along ul. Bora-Komorowskiego near os. Tysiąclecia at well over 80 km/h, especially at night. We need a speed camera or at least a section control here.",
+    "lat": 50.087600,
+    "lng": 19.996800,
+    "upvotes": 178,
+    "days_ago": 210
+  },
+  {
+    "category": "infrastructure",
+    "title": "Pothole at os. Tysiąclecia parking entrance",
+    "description": "There is a deep pothole right at the entrance to the parking lot on os. Tysiąclecia. It fills with water when it rains and you cannot see how deep it is.",
+    "lat": 50.090300,
+    "lng": 19.998500,
+    "upvotes": 18,
+    "days_ago": 70
+  },
+  {
+    "category": "lighting",
+    "title": "Streetlight out on os. Oświecenia",
+    "description": "The lamp by the bus stop on os. Oświecenia has been off for over a week. The stop is very dark in the morning.",
+    "lat": 50.094600,
+    "lng": 20.007200,
+    "upvotes": 4,
+    "days_ago": 9
+  },
+  {
+    "category": "other",
+    "title": "Abandoned car near Kolbe church",
+    "description": "A grey Opel with flat tyres and no plates has been parked near the church of św. Maksymiliana Kolbego on os. Tysiąclecia for months. It takes a space and collects rubbish.",
+    "lat": 50.091700,
+    "lng": 20.000300,
+    "upvotes": 11,
+    "days_ago": 150
+  },
+  {
+    "category": "infrastructure",
+    "title": "Cracked sidewalk by Arka Pana",
+    "description": "The sidewalk along ul. Obrońców Krzyża next to the Arka Pana church is badly cracked. Hard to push a pram or wheelchair here.",
+    "lat": 50.085300,
+    "lng": 20.024800,
+    "upvotes": 27,
+    "days_ago": 33
+  },
+  {
+    "category": "traffic",
+    "title": "Traffic lights too short at Rondo Kocmyrzowskie",
+    "description": "At Rondo Kocmyrzowskie only three or four cars get through on green coming from ul. Kocmyrzowska. In rush hour the queue goes back hundreds of metres.",
+    "lat": 50.081000,
+    "lng": 20.037000,
+    "upvotes": 54,
+    "days_ago": 120
+  },
+  {
+    "category": "noise",
+    "title": "Loud bar until 3am on os. Kalinowe",
+    "description": "The pub in the pavilion on os. Kalinowe plays music with open doors until 3am on weekends. People smoking outside are shouting under our windows.",
+    "lat": 50.084300,
+    "lng": 20.030500,
+    "upvotes": 19,
+    "days_ago": 18
+  },
+  {
+    "category": "cleanliness",
+    "title": "Overflowing recycling bins on Kocmyrzowska",
+    "description": "The recycling containers by ul. Kocmyrzowska in Bieńczyce are always full and cardboard is lying all over the pavement. Collection clearly needs to be more frequent.",
+    "lat": 50.085800,
+    "lng": 20.040200,
+    "upvotes": 8,
+    "days_ago": 26
+  },
+  {
+    "category": "safety",
+    "title": "Cyclists cut off at Rondo Czyżyńskie",
+    "description": "The bike crossing at Rondo Czyżyńskie is badly marked and drivers turning right never look. I almost got hit twice this month.",
+    "lat": 50.071800,
+    "lng": 20.008500,
+    "upvotes": 42,
+    "days_ago": 77
+  },
+  {
+    "category": "infrastructure",
+    "title": "No bike rack at aviation museum",
+    "description": "There is nowhere to lock a bike at the Muzeum Lotnictwa Polskiego entrance on al. Jana Pawła II. People chain bikes to the fence and trees.",
+    "lat": 50.077200,
+    "lng": 19.984600,
+    "upvotes": 3,
+    "days_ago": 180
+  },
+  {
+    "category": "traffic",
+    "title": "Gridlock after events at Tauron Arena",
+    "description": "After every concert at Tauron Arena on ul. Lema the whole area is blocked for an hour. There is no traffic management and taxis stop wherever they like.",
+    "lat": 50.067600,
+    "lng": 19.991400,
+    "upvotes": 96,
+    "days_ago": 250
+  },
+  {
+    "category": "safety",
+    "title": "Icy stairs with no railing on os. Na Stoku",
+    "description": "The concrete stairs down the slope on os. Na Stoku have no handrail and get very icy in winter. Older residents have fallen here.",
+    "lat": 50.087700,
+    "lng": 20.055300,
+    "upvotes": 13,
+    "days_ago": 52
+  },
+  {
+    "category": "lighting",
+    "title": "Dark stretch of ul. Łowińskiego",
+    "description": "A long section of ul. Łowińskiego in Wzgórza Krzesławickie has no working street lights. Walking from the bus is pitch black in winter.",
+    "lat": 50.093200,
+    "lng": 20.057400,
+    "upvotes": 7,
+    "days_ago": 300
+  },
+  {
+    "category": "other",
+    "title": "Matejko manor garden neglected",
+    "description": "The garden around Dworek Jana Matejki in Krzesławice is overgrown and the benches are broken. Such a historic place deserves better care.",
+    "lat": 50.097400,
+    "lng": 20.063800,
+    "upvotes": 25,
+    "days_ago": 365
+  },
+  {
+    "category": "cleanliness",
+    "title": "Dog waste all over os. Na Wzgórzach lawn",
+    "description": "The green area between blocks on os. Na Wzgórzach is full of dog waste. There is not a single dog bin nearby.",
+    "lat": 50.089200,
+    "lng": 20.063600,
+    "upvotes": 16,
+    "days_ago": 8
+  },
+  {
+    "category": "infrastructure",
+    "title": "Crumbling pavement on ul. Stoczniowców",
+    "description": "The pavement along ul. Stoczniowców in Łęg is breaking apart and has big holes near the bus stop. It has been like this for years.",
+    "lat": 50.059000,
+    "lng": 19.999200,
+    "upvotes": 10,
+    "days_ago": 110
+  },
+  {
+    "category": "noise",
+    "title": "Humming from EC Łęg at night",
+    "description": "A constant low humming comes from the heat and power plant on ul. Ciepłownicza, much louder at night. It started after the recent maintenance.",
+    "lat": 50.057600,
+    "lng": 20.009800,
+    "upvotes": 34,
+    "days_ago": 200
+  },
+  {
+    "category": "safety",
+    "title": "No barrier along Vistula path in Łęg",
+    "description": "The riverside path by the Wisła in Łęg runs right next to a steep drop with no barrier. Kids ride bikes there all the time.",
+    "lat": 50.050800,
+    "lng": 20.003900,
+    "upvotes": 2,
+    "days_ago": 14
+  },
+  {
+    "category": "infrastructure",
+    "title": "Sinking cobbles outside Cistercian abbey",
+    "description": "The cobblestones on ul. Klasztorna in front of the Cistercian abbey in Mogiła have sunk and form big puddles. Visitors and wedding guests have to jump over them.",
+    "lat": 50.065600,
+    "lng": 20.067200,
+    "upvotes": 29,
+    "days_ago": 160
+  },
+  {
+    "category": "cleanliness",
+    "title": "Rubbish on Kopiec Wandy path",
+    "description": "The path up Kopiec Wandy is full of cans and broken glass, especially at the top. There are no bins anywhere on the mound.",
+    "lat": 50.070300,
+    "lng": 20.068400,
+    "upvotes": 41,
+    "days_ago": 40
+  },
+  {
+    "category": "traffic",
+    "title": "Trucks speeding on ul. Igołomska",
+    "description": "Heavy trucks drive very fast on ul. Igołomska through Mogiła and the houses shake. There is no crossing for people walking to the bus.",
+    "lat": 50.064300,
+    "lng": 20.074800,
+    "upvotes": 163,
+    "days_ago": 85
+  },
+  {
+    "category": "lighting",
+    "title": "Flickering lamps by Teatr Ludowy",
+    "description": "The lamps on os. Teatralne in front of Teatr Ludowy keep flickering on and off. It is really disorienting when leaving an evening show.",
+    "lat": 50.076300,
+    "lng": 20.030100,
+    "upvotes": 5,
+    "days_ago": 1
+  }
+]
