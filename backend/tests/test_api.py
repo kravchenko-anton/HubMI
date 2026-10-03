@@ -40,6 +40,10 @@ def test_flow():
         assert similar == []
         assert c.get(f"/issues/{a['id']}").json()["upvotes"] == -11
 
+        assert c.post(f"/issues/{b['id']}/upvote").json()["upvotes"] == 3
+        assert c.delete(f"/issues/{b['id']}/upvote").json()["upvotes"] == 2
+
         assert c.post("/issues/9999/upvote").status_code == 404
+        assert c.delete("/issues/9999/upvote").status_code == 404
         assert c.post("/issues/9999/downvote").status_code == 404
     os.remove("test_hubmi.db")

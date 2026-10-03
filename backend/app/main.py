@@ -153,20 +153,26 @@ def get_issue(issue_id: int):
     return fetch_issue(issue_id)
 
 
-@app.post("/issues/{issue_id}/upvote", response_model=Issue)
-def upvote_issue(issue_id: int):
+def change_votes(issue_id: int, delta: int) -> Issue:
     with get_conn() as conn:
-        cur = conn.execute("UPDATE issues SET upvotes = upvotes + 1 WHERE id = ?", (issue_id,))
+        cur = conn.execute("UPDATE issues SET upvotes = upvotes + ? WHERE id = ?", (delta, issue_id))
     if cur.rowcount == 0:
         raise HTTPException(404, "Issue not found")
     return fetch_issue(issue_id)
+
+
+@app.post("/issues/{issue_id}/upvote", response_model=Issue)
+def upvote_issue(issue_id: int):
+    return change_votes(issue_id, 1)
+
+
+@app.delete("/issues/{issue_id}/upvote", response_model=Issue)
+def remove_upvote(issue_id: int):
+    """Removes a like given earlier with POST /issues/{id}/upvote."""
+    return change_votes(issue_id, -1)
 
 
 @app.post("/issues/{issue_id}/downvote", response_model=Issue)
 def downvote_issue(issue_id: int):
     """Removes one vote; the count can go negative and hides the issue below HIDDEN_BELOW."""
-    with get_conn() as conn:
-        cur = conn.execute("UPDATE issues SET upvotes = upvotes - 1 WHERE id = ?", (issue_id,))
-    if cur.rowcount == 0:
-        raise HTTPException(404, "Issue not found")
-    return fetch_issue(issue_id)
+    return change_votes(issue_id, -1)
