@@ -5,6 +5,10 @@ An app for reporting city problems on a map (missing crosswalks, dark streets, n
 - `backend/` — FastAPI + SQLite API
 - `frontend/` — Expo (React Native) app
 
+## Try it
+
+Web: [seen-full-production.up.railway.app](https://seen-full-production.up.railway.app)
+
 ## Backend
 
 ```bash
