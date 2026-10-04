@@ -1,3 +1,6 @@
+import { File, UploadType } from 'expo-file-system'
+import { Platform } from 'react-native'
+
 export const API_BASE_URL = 'https://hubmi-production.up.railway.app'
 
 /** Seeded photos are paths like `/media/no-cross-walk.jpg`. External links are already absolute. */
@@ -118,10 +121,14 @@ function imageType(name: string) {
   return 'image/jpeg'
 }
 
-export async function uploadIssueImage(uri: string): Promise<string> {
+function isBrowserUri(uri: string) {
+  return uri.startsWith('blob:') || uri.startsWith('data:') || /^https?:\/\//i.test(uri)
+}
+
+async function uploadIssueImageForm(uri: string): Promise<string> {
   const name = imageName(uri)
   const form = new FormData()
-  if (uri.startsWith('blob:') || uri.startsWith('data:') || /^https?:\/\//i.test(uri)) {
+  if (isBrowserUri(uri)) {
     const blob = await (await fetch(uri)).blob()
     form.append('file', blob, name)
   } else {
@@ -133,6 +140,24 @@ export async function uploadIssueImage(uri: string): Promise<string> {
     throw new Error(`Image upload failed (${response.status})`)
   }
   const body = (await response.json()) as { image_url: string }
+  return body.image_url
+}
+
+export async function uploadIssueImage(uri: string): Promise<string> {
+  if (Platform.OS === 'web' || isBrowserUri(uri)) return uploadIssueImageForm(uri)
+
+  const name = imageName(uri)
+  const result = await new File(uri).upload(`${API_BASE_URL}/media`, {
+    httpMethod: 'POST',
+    uploadType: UploadType.MULTIPART,
+    fieldName: 'file',
+    mimeType: imageType(name),
+    sessionType: 'foreground',
+  })
+  if (result.status < 200 || result.status >= 300) {
+    throw new Error(`Image upload failed (${result.status})`)
+  }
+  const body = JSON.parse(result.body) as { image_url: string }
   return body.image_url
 }
 

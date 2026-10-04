@@ -2,6 +2,7 @@ import os
 
 os.environ["HUBMI_DB"] = "test_hubmi.db"
 os.environ["HUBMI_SEED"] = "0"
+os.environ["HUBMI_MEDIA"] = "local"
 
 from fastapi.testclient import TestClient  # noqa: E402
 

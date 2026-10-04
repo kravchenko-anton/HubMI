@@ -8,7 +8,7 @@ from pathlib import Path
 
 from fastapi import FastAPI, File, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse, Response
 from pydantic import BaseModel, Field
 
 from app.db import get_conn, init_db
@@ -72,7 +72,6 @@ async def lifespan(_: FastAPI):
 app = FastAPI(title="HubMI", lifespan=lifespan)
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 MEDIA_DIR.mkdir(exist_ok=True)
-app.mount("/media", StaticFiles(directory=MEDIA_DIR), name="media")
 
 
 def haversine_m(lat1: float, lng1: float, lat2: float, lng2: float) -> float:
@@ -205,27 +204,101 @@ IMAGE_TYPES = {
     "image/heic": ".heic",
     "image/heif": ".heic",
 }
+CONTENT_TYPES = {
+    ".jpg": "image/jpeg",
+    ".png": "image/png",
+    ".webp": "image/webp",
+    ".heic": "image/heic",
+}
 MAX_IMAGE_BYTES = 8_000_000
+
+# Temporary. Remove these and set TIGRIS_* env vars instead.
+TIGRIS_ENDPOINT = "https://t3.storageapi.dev"
+TIGRIS_BUCKET = "contained-keg-dma4z0ggpei"
+TIGRIS_ACCESS_KEY = "tid_PhtIXXWuduVkloTXKtjpKWplaToOSGbZziqCTDuyznZk_MGKvS"
+TIGRIS_SECRET_KEY = "tsec_E4lNR-oEOkZGoQ4x9CoHk-6WsISm9i4o9nyuD4_og9WUzN9fZ-oJsz5jC7u+BJsIYATHJZ"
+TIGRIS_REGION = "auto"
+
+
+def image_suffix(content_type: str | None, filename: str | None, data: bytes) -> str | None:
+    suffix = IMAGE_TYPES.get((content_type or "").split(";")[0].strip().lower())
+    if suffix is None:
+        guessed = Path(filename or "").suffix.lower()
+        if guessed == ".jpeg":
+            guessed = ".jpg"
+        if guessed in CONTENT_TYPES:
+            suffix = guessed
+    if suffix is None:
+        if data.startswith(b"\xff\xd8\xff"):
+            suffix = ".jpg"
+        elif data.startswith(b"\x89PNG\r\n\x1a\n"):
+            suffix = ".png"
+        elif len(data) >= 12 and data.startswith(b"RIFF") and data[8:12] == b"WEBP":
+            suffix = ".webp"
+        elif b"ftyp" in data[:32]:
+            suffix = ".heic"
+    return suffix
+
+
+def tigris_client():
+    import boto3
+
+    return boto3.client(
+        "s3",
+        endpoint_url=os.getenv("TIGRIS_ENDPOINT_URL", TIGRIS_ENDPOINT),
+        aws_access_key_id=os.getenv("TIGRIS_ACCESS_KEY_ID", TIGRIS_ACCESS_KEY),
+        aws_secret_access_key=os.getenv("TIGRIS_SECRET_ACCESS_KEY", TIGRIS_SECRET_KEY),
+        region_name=os.getenv("TIGRIS_REGION", TIGRIS_REGION),
+    )
+
+
+def store_image(data: bytes, suffix: str) -> str:
+    name = f"{uuid.uuid4().hex}{suffix}"
+    if os.getenv("HUBMI_MEDIA") == "local":
+        (MEDIA_DIR / name).write_bytes(data)
+    else:
+        tigris_client().put_object(
+            Bucket=os.getenv("TIGRIS_BUCKET", TIGRIS_BUCKET),
+            Key=name,
+            Body=data,
+            ContentType=CONTENT_TYPES[suffix],
+        )
+    return f"/media/{name}"
+
+
+@app.get("/media/{name}")
+def read_media(name: str):
+    if name != Path(name).name:
+        raise HTTPException(404, "Image not found")
+    path = MEDIA_DIR / name
+    if path.is_file():
+        return FileResponse(path)
+    if os.getenv("HUBMI_MEDIA") == "local":
+        raise HTTPException(404, "Image not found")
+    from botocore.exceptions import ClientError
+
+    try:
+        obj = tigris_client().get_object(Bucket=os.getenv("TIGRIS_BUCKET", TIGRIS_BUCKET), Key=name)
+    except ClientError as error:
+        raise HTTPException(404, "Image not found") from error
+    return Response(content=obj["Body"].read(), media_type=obj.get("ContentType") or "application/octet-stream")
 
 
 @app.post("/media", response_model=MediaUpload, status_code=201)
 async def upload_media(file: UploadFile = File(...)):
-    suffix = IMAGE_TYPES.get((file.content_type or "").lower())
-    if suffix is None:
-        guessed = Path(file.filename or "").suffix.lower()
-        suffix = guessed if guessed in {".jpg", ".jpeg", ".png", ".webp", ".heic"} else None
-    if suffix == ".jpeg":
-        suffix = ".jpg"
-    if suffix is None:
-        raise HTTPException(415, "Upload a JPEG, PNG, WebP, or HEIC image")
     data = await file.read()
     if not data:
         raise HTTPException(400, "Empty image")
     if len(data) > MAX_IMAGE_BYTES:
         raise HTTPException(413, "Image is too large")
-    name = f"{uuid.uuid4().hex}{suffix}"
-    (MEDIA_DIR / name).write_bytes(data)
-    return MediaUpload(image_url=f"/media/{name}")
+    suffix = image_suffix(file.content_type, file.filename, data)
+    if suffix is None:
+        raise HTTPException(415, "Upload a JPEG, PNG, WebP, or HEIC image")
+    try:
+        image_url = store_image(data, suffix)
+    except Exception as error:
+        raise HTTPException(502, "Could not store the image") from error
+    return MediaUpload(image_url=image_url)
 
 
 @app.post("/issues/{issue_id}/solve", response_model=Issue)
