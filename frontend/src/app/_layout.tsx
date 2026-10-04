@@ -7,6 +7,7 @@ import { StyleSheet, useColorScheme } from 'react-native'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 
 import { AnimatedSplashOverlay } from '@/components/animated-icon'
+import { ConfettiBurst } from '@/components/confetti-burst'
 import { QueryProvider } from '@/components/query-provider'
 
 SplashScreen.preventAutoHideAsync();
@@ -23,6 +24,7 @@ export default function RootLayout() {
           </BottomSheetModalProvider>
         </ThemeProvider>
       </QueryProvider>
+      <ConfettiBurst />
     </GestureHandlerRootView>
   );
 }

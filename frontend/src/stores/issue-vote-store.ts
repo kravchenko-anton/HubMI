@@ -6,14 +6,41 @@ import type { IssueVote } from '@/lib/issue-votes'
 
 type PendingVote = {
   next: IssueVote | null
+  sunk: boolean
 }
 
 type IssueVoteState = {
+  voterId: string
   votes: Record<number, IssueVote>
+  sunk: Record<number, true>
   pending: Partial<Record<number, PendingVote>>
   hydrated: boolean
-  setVote: (id: number, vote: IssueVote | null) => void
-  setPending: (id: number, next: IssueVote | null | undefined) => void
+  setVote: (id: number, vote: IssueVote | null, sunk?: boolean) => void
+  setPending: (id: number, next: IssueVote | null | undefined, sunk?: boolean) => void
+}
+
+function createVoterId() {
+  const cryptoApi = globalThis.crypto
+  if (cryptoApi?.randomUUID) return cryptoApi.randomUUID()
+  return `voter-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`
+}
+
+function sanitizeSunk(value: unknown): Record<number, true> {
+  if (!value || typeof value !== 'object') return {}
+  const sunk: Record<number, true> = {}
+  for (const [id, flagged] of Object.entries(value as Record<string, unknown>)) {
+    const numeric = Number(id)
+    if (!Number.isInteger(numeric) || flagged !== true) continue
+    sunk[numeric] = true
+  }
+  return sunk
+}
+
+function sanitizeVoterId(value: unknown, fallback: string) {
+  if (typeof value !== 'string') return fallback
+  const voterId = value.trim()
+  if (!voterId || voterId.length > 80) return fallback
+  return voterId
 }
 
 const VOTE_FILE = 'issue-votes.json'
@@ -87,32 +114,42 @@ const voteStorage = {
 export const useIssueVoteStore = create<IssueVoteState>()(
   persist(
     (set) => ({
+      voterId: createVoterId(),
       votes: {},
+      sunk: {},
       pending: {},
       hydrated: false,
-      setVote: (id, vote) =>
+      setVote: (id, vote, sunk = false) =>
         set((state) => {
           const votes = { ...state.votes }
+          const nextSunk = { ...state.sunk }
           if (vote == null) delete votes[id]
           else votes[id] = vote
-          return { votes }
+          if (vote === 'down' && sunk) nextSunk[id] = true
+          else delete nextSunk[id]
+          return { votes, sunk: nextSunk }
         }),
-      setPending: (id, next) =>
+      setPending: (id, next, sunk = false) =>
         set((state) => {
           const pending = { ...state.pending }
           if (next === undefined) delete pending[id]
-          else pending[id] = { next }
+          else pending[id] = { next, sunk }
           return { pending }
         }),
     }),
     {
       name: 'issue-votes',
       storage: createJSONStorage(() => voteStorage),
-      partialize: (state) => ({ votes: state.votes }),
-      merge: (persisted, current) => ({
-        ...current,
-        votes: sanitizeVotes((persisted as { votes?: unknown } | undefined)?.votes),
-      }),
+      partialize: (state) => ({ votes: state.votes, voterId: state.voterId, sunk: state.sunk }),
+      merge: (persisted, current) => {
+        const saved = persisted as { votes?: unknown; voterId?: unknown; sunk?: unknown } | undefined
+        return {
+          ...current,
+          voterId: sanitizeVoterId(saved?.voterId, current.voterId),
+          votes: sanitizeVotes(saved?.votes),
+          sunk: sanitizeSunk(saved?.sunk),
+        }
+      },
       onRehydrateStorage: () => () => {
         queueMicrotask(() => {
           useIssueVoteStore.setState({ hydrated: true })

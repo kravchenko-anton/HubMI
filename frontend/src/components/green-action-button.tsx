@@ -13,6 +13,7 @@ export function GreenActionButton({
   busy,
   success,
   onPress,
+  compact,
   style,
 }: {
   label: string
@@ -21,13 +22,14 @@ export function GreenActionButton({
   busy?: boolean
   success?: boolean
   onPress: () => void
+  compact?: boolean
   style?: StyleProp<ViewStyle>
 }) {
   const blocked = Boolean(disabled || busy || success)
   const press = usePressScale(blocked ? 1 : 0.97)
 
   return (
-    <Animated.View style={[styles.fill, press.style, style]}>
+    <Animated.View style={[compact ? styles.hug : styles.fill, press.style, style]}>
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={accessibilityLabel}
@@ -36,7 +38,7 @@ export function GreenActionButton({
         onPress={onPress}
         onPressIn={press.onPressIn}
         onPressOut={press.onPressOut}
-        style={[styles.button, disabled && !busy && !success && styles.disabled]}>
+        style={[styles.button, compact && styles.compact, disabled && !busy && !success && styles.disabled]}>
         {success ? (
           <SymbolView
             name={{ ios: 'checkmark', android: 'check', web: 'check' }}
@@ -47,7 +49,7 @@ export function GreenActionButton({
         ) : busy ? (
           <ActivityIndicator color="#FFFFFF" />
         ) : (
-          <Text style={styles.label}>{label}</Text>
+          <Text style={[styles.label, compact && styles.compactLabel]}>{label}</Text>
         )}
       </Pressable>
     </Animated.View>
@@ -58,12 +60,20 @@ const styles = StyleSheet.create({
   fill: {
     alignSelf: 'stretch',
   },
+  hug: {
+    alignSelf: 'flex-start',
+  },
   button: {
     height: 52,
     borderRadius: 26,
     backgroundColor: ACTION_GREEN,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  compact: {
+    height: 36,
+    paddingHorizontal: 14,
+    borderRadius: 18,
   },
   disabled: {
     opacity: 0.35,
@@ -72,5 +82,8 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '700',
+  },
+  compactLabel: {
+    fontSize: 14,
   },
 })

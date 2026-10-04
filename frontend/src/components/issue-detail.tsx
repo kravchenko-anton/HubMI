@@ -86,6 +86,7 @@ export function IssueDetail({
             label="I solved this"
             accessibilityLabel="Mark this problem as solved"
             onPress={openSolve}
+            compact
             style={styles.solve}
           />
         )}
@@ -273,7 +274,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   solve: {
-    flex: 1,
+    marginLeft: 'auto',
   },
   back: {
     width: 36,

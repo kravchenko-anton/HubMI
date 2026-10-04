@@ -25,6 +25,7 @@ const DOCK_BODY = 168
 const REPORT_ROW = 72 + 8 + 16 + 22
 const REPORTS_BODY = 4 + 36 + 22 + REPORT_ROW * 3
 const ISSUE_BODY = 4 + 36 + 12 * 6 + 240 + 34 + 26 + 22 + 52 + 64
+const SOLVE_BODY = 4 + 46 + 40 + 32 + 200 + 32 + 96 + 64
 
 function keepHeight(current: number, next: number) {
   if (next <= 0 || Math.abs(current - next) < 2) return current
@@ -68,6 +69,7 @@ export function MapBottomSheet({
   const [feedHeight, setFeedHeight] = useState(0)
   const [issueHeight, setIssueHeight] = useState(0)
   const [reportsHeight, setReportsHeight] = useState(0)
+  const [solveHeight, setSolveHeight] = useState(0)
   const [dockContentHeight, setDockContentHeight] = useState(0)
   const [settledPage, setSettledPage] = useState<SheetPage | null>(null)
   const lastOverlaySnap = useRef(0)
@@ -79,6 +81,9 @@ export function MapBottomSheet({
   }, [])
   const onReportsHeight = useCallback((next: number) => {
     setReportsHeight((current) => keepHeight(current, next))
+  }, [])
+  const onSolveHeight = useCallback((next: number) => {
+    setSolveHeight((current) => keepHeight(current, next))
   }, [])
   const onDockHeight = useCallback((next: number) => {
     setDockContentHeight((current) => keepHeight(current, next))
@@ -97,14 +102,16 @@ export function MapBottomSheet({
   const overlayMax = Math.max(Math.round(sheetContainerHeight * 0.9), dockHeight)
   const pageSnap = useCallback(
     (page: SheetPage) => {
-      if (page === 'compose' || page === 'solve') return overlayMax
+      if (page === 'compose') return overlayMax
       const body =
         page === 'reports'
           ? reportsHeight || REPORTS_BODY + paddingBottom
-          : issueHeight || ISSUE_BODY + paddingBottom
+          : page === 'solve'
+            ? solveHeight || SOLVE_BODY + paddingBottom
+            : issueHeight || ISSUE_BODY + paddingBottom
       return Math.min(overlayMax, body + SHEET_CHROME)
     },
-    [issueHeight, overlayMax, paddingBottom, reportsHeight],
+    [issueHeight, overlayMax, paddingBottom, reportsHeight, solveHeight],
   )
   const overlayPage =
     content === 'issue' || content === 'reports' || content === 'compose' || content === 'solve'
@@ -117,7 +124,7 @@ export function MapBottomSheet({
   const overlaySnap = picking
     ? resolvedDock
     : overlayCandidates.length === 0 ||
-        overlayCandidates.some((page) => page === 'compose' || page === 'solve')
+        overlayCandidates.some((page) => page === 'compose')
       ? overlayMax
       : Math.max(...overlayCandidates.map(pageSnap))
   if (content !== 'home') lastOverlaySnap.current = overlaySnap
@@ -130,7 +137,13 @@ export function MapBottomSheet({
     (page: SheetPage) => {
       if (page === 'compose') return <ReportComposer paddingBottom={paddingBottom} />
       if (page === 'solve' && selectedIssue) {
-        return <SolveComposer issue={selectedIssue} paddingBottom={paddingBottom} />
+        return (
+          <SolveComposer
+            issue={selectedIssue}
+            paddingBottom={paddingBottom}
+            onContentHeight={onSolveHeight}
+          />
+        )
       }
       if (page === 'issue' && selectedIssue) {
         return (
@@ -153,7 +166,7 @@ export function MapBottomSheet({
       }
       return null
     },
-    [onIssueHeight, onReportsHeight, paddingBottom, selectedIssue],
+    [onIssueHeight, onReportsHeight, onSolveHeight, paddingBottom, selectedIssue],
   )
 
   useEffect(() => {

@@ -12,9 +12,18 @@ import { GreenActionButton } from '@/components/green-action-button'
 import { ReportCamera } from '@/components/report-camera'
 import { dropIssue } from '@/hooks/use-issue'
 import { usePressScale } from '@/hooks/use-press-scale'
+import { useConfettiStore } from '@/stores/confetti-store'
 import { useMapSheetStore } from '@/stores/map-sheet-store'
 
-export function SolveComposer({ issue, paddingBottom }: { issue: Issue; paddingBottom: number }) {
+export function SolveComposer({
+  issue,
+  paddingBottom,
+  onContentHeight,
+}: {
+  issue: Issue
+  paddingBottom: number
+  onContentHeight?: (height: number) => void
+}) {
   const cancelSolve = useMapSheetStore((state) => state.cancelSolve)
   const finishSolve = useMapSheetStore((state) => state.finishSolve)
   const queryClient = useQueryClient()
@@ -35,6 +44,7 @@ export function SolveComposer({ issue, paddingBottom }: { issue: Issue; paddingB
       dropIssue(queryClient, solved.id)
       queryClient.invalidateQueries({ queryKey: ['issues'] })
       useMapSheetStore.getState().setSelectedIssue(solved)
+      useConfettiStore.getState().play('bottom')
       setSuccess(true)
     },
     onError: () => setError('Could not mark this as solved'),
@@ -71,7 +81,10 @@ export function SolveComposer({ issue, paddingBottom }: { issue: Issue; paddingB
   const busy = mutation.isPending || success
 
   return (
-    <BottomSheetScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={[styles.content, { paddingBottom }]}>
+    <BottomSheetScrollView keyboardShouldPersistTaps="handled">
+      <View
+        onLayout={(event) => onContentHeight?.(event.nativeEvent.layout.height)}
+        style={[styles.content, { paddingBottom }]}>
       <View style={styles.header}>
         <ScalePress press={backPress} label="Back to the problem" onPress={cancelSolve} style={styles.back}>
           <SymbolView
@@ -89,7 +102,7 @@ export function SolveComposer({ issue, paddingBottom }: { issue: Issue; paddingB
 
       <Text style={styles.section}>Photo</Text>
       {photo ? (
-        <View style={styles.thumbWrap}>
+        <View style={styles.thumbWell}>
           <Image source={{ uri: photo }} style={styles.thumb} contentFit="cover" />
           <Pressable
             accessibilityRole="button"
@@ -151,6 +164,7 @@ export function SolveComposer({ issue, paddingBottom }: { issue: Issue; paddingB
         }}
       />
 
+      </View>
       <ReportCamera
         visible={cameraOpen}
         onClose={() => setCameraOpen(false)}
@@ -276,7 +290,8 @@ const styles = StyleSheet.create({
   },
   photoAction: {
     flex: 1,
-    height: 96,
+    minHeight: 112,
+    minWidth: 140,
     borderRadius: 20,
     backgroundColor: '#F4F2F8',
     alignItems: 'center',
@@ -284,33 +299,34 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   photoIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     backgroundColor: '#FFFFFF',
     alignItems: 'center',
     justifyContent: 'center',
   },
   photoLabel: {
     color: '#16141A',
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '600',
   },
-  thumbWrap: {
-    width: 120,
-    height: 120,
+  thumbWell: {
+    height: 200,
     marginBottom: 18,
+    padding: 8,
+    borderRadius: 24,
+    backgroundColor: '#F4F2F8',
   },
   thumb: {
-    width: 120,
-    height: 120,
-    borderRadius: 18,
-    backgroundColor: '#F4F2F8',
+    flex: 1,
+    borderRadius: 16,
+    backgroundColor: '#E7E4EC',
   },
   thumbRemove: {
     position: 'absolute',
-    top: 6,
-    right: 6,
+    top: 16,
+    right: 16,
     width: 22,
     height: 22,
     borderRadius: 11,

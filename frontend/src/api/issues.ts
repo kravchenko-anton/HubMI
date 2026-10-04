@@ -88,24 +88,36 @@ export async function getIssue(id: number, signal?: AbortSignal): Promise<Issue>
   return (await response.json()) as Issue
 }
 
-async function sendIssueVote(id: number, path: 'upvote' | 'downvote', method: 'POST' | 'DELETE') {
-  const response = await fetch(`${API_BASE_URL}/issues/${id}/${path}`, { method })
+async function sendIssueVote(
+  id: number,
+  path: 'upvote' | 'downvote',
+  method: 'POST' | 'DELETE',
+  voterId: string,
+) {
+  const response = await fetch(`${API_BASE_URL}/issues/${id}/${path}`, {
+    method,
+    headers: { 'X-Voter-Id': voterId },
+  })
   if (!response.ok) {
     throw new Error(`Vote request failed (${response.status})`)
   }
   return (await response.json()) as Issue
 }
 
-export function upvoteIssue(id: number) {
-  return sendIssueVote(id, 'upvote', 'POST')
+export function upvoteIssue(id: number, voterId: string) {
+  return sendIssueVote(id, 'upvote', 'POST', voterId)
 }
 
-export function removeUpvote(id: number) {
-  return sendIssueVote(id, 'upvote', 'DELETE')
+export function removeUpvote(id: number, voterId: string) {
+  return sendIssueVote(id, 'upvote', 'DELETE', voterId)
 }
 
-export function downvoteIssue(id: number) {
-  return sendIssueVote(id, 'downvote', 'POST')
+export function downvoteIssue(id: number, voterId: string) {
+  return sendIssueVote(id, 'downvote', 'POST', voterId)
+}
+
+export function removeDownvote(id: number, voterId: string) {
+  return sendIssueVote(id, 'downvote', 'DELETE', voterId)
 }
 
 function imageName(uri: string) {

@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
 
-from fastapi import FastAPI, File, HTTPException, Query, UploadFile
+from fastapi import FastAPI, File, Header, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, Response
 from pydantic import BaseModel, Field
@@ -81,12 +81,18 @@ def haversine_m(lat1: float, lng1: float, lat2: float, lng2: float) -> float:
     return 2 * EARTH_RADIUS_M * math.asin(math.sqrt(a))
 
 
+def public_row(row) -> dict:
+    data = dict(row)
+    data["upvotes"] = max(0, int(data["upvotes"]))
+    return data
+
+
 def fetch_issue(issue_id: int) -> Issue:
     with get_conn() as conn:
         row = conn.execute("SELECT * FROM issues WHERE id = ?", (issue_id,)).fetchone()
     if row is None:
         raise HTTPException(404, "Issue not found")
-    return Issue(**dict(row))
+    return Issue(**public_row(row))
 
 
 @app.get("/categories", response_model=list[str])
@@ -132,7 +138,7 @@ def query_issues(
     params.append(limit)
     with get_conn() as conn:
         rows = conn.execute(sql, params).fetchall()
-    return [Issue(**dict(r)) for r in rows]
+    return [Issue(**public_row(r)) for r in rows]
 
 
 @app.get("/issues/similar", response_model=list[SimilarIssue])
@@ -161,7 +167,7 @@ def similar_issues(
     for r in rows:
         d = haversine_m(lat, lng, r["lat"], r["lng"])
         if d <= radius_m:
-            results.append(SimilarIssue(**dict(r), distance_m=round(d, 1)))
+            results.append(SimilarIssue(**public_row(r), distance_m=round(d, 1)))
     results.sort(key=lambda i: (-i.upvotes, i.distance_m))
     return results[:limit]
 
@@ -171,29 +177,62 @@ def get_issue(issue_id: int):
     return fetch_issue(issue_id)
 
 
-def change_votes(issue_id: int, delta: int) -> Issue:
+def apply_vote(issue_id: int, voter_id: str, new_value: int | None, *, match: int | None = None) -> Issue:
+    """One voter, one row. `new_value` is +1 or -1; None clears a row whose value is `match`."""
+    voter_id = voter_id.strip()
+    if not voter_id or len(voter_id) > 80:
+        raise HTTPException(400, "voter id required")
     with get_conn() as conn:
-        cur = conn.execute("UPDATE issues SET upvotes = upvotes + ? WHERE id = ?", (delta, issue_id))
-    if cur.rowcount == 0:
-        raise HTTPException(404, "Issue not found")
+        issue = conn.execute("SELECT id FROM issues WHERE id = ?", (issue_id,)).fetchone()
+        if issue is None:
+            raise HTTPException(404, "Issue not found")
+        previous = conn.execute(
+            "SELECT value FROM issue_votes WHERE issue_id = ? AND voter_id = ?",
+            (issue_id, voter_id),
+        ).fetchone()
+        old = int(previous["value"]) if previous else 0
+        new = old
+        if match is not None:
+            if old == match:
+                conn.execute(
+                    "DELETE FROM issue_votes WHERE issue_id = ? AND voter_id = ?",
+                    (issue_id, voter_id),
+                )
+                new = 0
+        else:
+            conn.execute(
+                "INSERT INTO issue_votes (issue_id, voter_id, value) VALUES (?, ?, ?)"
+                " ON CONFLICT(issue_id, voter_id) DO UPDATE SET value = excluded.value",
+                (issue_id, voter_id, new_value),
+            )
+            new = new_value
+        delta = new - old
+        if delta:
+            conn.execute("UPDATE issues SET upvotes = upvotes + ? WHERE id = ?", (delta, issue_id))
     return fetch_issue(issue_id)
 
 
 @app.post("/issues/{issue_id}/upvote", response_model=Issue)
-def upvote_issue(issue_id: int):
-    return change_votes(issue_id, 1)
+def upvote_issue(issue_id: int, x_voter_id: str = Header(min_length=1, max_length=80)):
+    return apply_vote(issue_id, x_voter_id, 1)
 
 
 @app.delete("/issues/{issue_id}/upvote", response_model=Issue)
-def remove_upvote(issue_id: int):
+def remove_upvote(issue_id: int, x_voter_id: str = Header(min_length=1, max_length=80)):
     """Removes a like given earlier with POST /issues/{id}/upvote."""
-    return change_votes(issue_id, -1)
+    return apply_vote(issue_id, x_voter_id, None, match=1)
 
 
 @app.post("/issues/{issue_id}/downvote", response_model=Issue)
-def downvote_issue(issue_id: int):
-    """Removes one vote; the count can go negative and hides the issue below HIDDEN_BELOW."""
-    return change_votes(issue_id, -1)
+def downvote_issue(issue_id: int, x_voter_id: str = Header(min_length=1, max_length=80)):
+    """Records this voter's downvote. The public count stays at 0; the raw sum can hide the issue."""
+    return apply_vote(issue_id, x_voter_id, -1)
+
+
+@app.delete("/issues/{issue_id}/downvote", response_model=Issue)
+def remove_downvote(issue_id: int, x_voter_id: str = Header(min_length=1, max_length=80)):
+    """Removes a downvote given earlier with POST /issues/{id}/downvote."""
+    return apply_vote(issue_id, x_voter_id, None, match=-1)
 
 
 IMAGE_TYPES = {

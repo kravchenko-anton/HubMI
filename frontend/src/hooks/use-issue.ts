@@ -1,8 +1,8 @@
 import { useMutation, useQuery, useQueryClient, type QueryClient, type QueryKey } from '@tanstack/react-query'
 import { useEffect } from 'react'
 
-import { downvoteIssue, getIssue, removeUpvote, upvoteIssue, type Issue } from '@/api/issues'
-import { voteAfterOp, voteDelta, voteOperations, type IssueVote, type VoteOp } from '@/lib/issue-votes'
+import { downvoteIssue, getIssue, removeDownvote, removeUpvote, upvoteIssue, type Issue } from '@/api/issues'
+import { previewScore, previewSunk, voteAfterOp, voteOperations, type IssueVote, type VoteOp } from '@/lib/issue-votes'
 import { useIssueVoteStore } from '@/stores/issue-vote-store'
 import { useMapSheetStore } from '@/stores/map-sheet-store'
 
@@ -63,10 +63,21 @@ function restoreSnapshot(queryClient: QueryClient, id: number, snapshot: VoteSna
   }
 }
 
-function runVoteOp(id: number, op: VoteOp) {
-  if (op === 'add-up') return upvoteIssue(id)
-  if (op === 'remove-up') return removeUpvote(id)
-  return downvoteIssue(id)
+function runVoteOp(id: number, op: VoteOp, voterId: string) {
+  if (op === 'add-up') return upvoteIssue(id, voterId)
+  if (op === 'remove-up') return removeUpvote(id, voterId)
+  if (op === 'remove-down') return removeDownvote(id, voterId)
+  return downvoteIssue(id, voterId)
+}
+
+function scoreOf(snapshot: VoteSnapshot, id: number) {
+  if (snapshot.detail) return snapshot.detail.upvotes
+  for (const [, list] of snapshot.lists) {
+    const found = list?.find((item) => item.id === id)
+    if (found) return found.upvotes
+  }
+  if (snapshot.selected?.id === id) return snapshot.selected.upvotes
+  return 0
 }
 
 export function useIssueDetails(issue: Issue) {
@@ -92,29 +103,35 @@ export function useCastIssueVote(issueId: number) {
   const ready = useIssueVoteStore((state) => state.hydrated)
   const mutation = useMutation({
     mutationFn: async (next: IssueVote | null) => {
-      const from: IssueVote | null = useIssueVoteStore.getState().votes[issueId] ?? null
+      const state = useIssueVoteStore.getState()
+      const from: IssueVote | null = state.votes[issueId] ?? null
+      const voterId = state.voterId
+      const nextSunk = state.pending[issueId]?.sunk ?? false
       let applied: IssueVote | null = from
       let latest: Issue | null = null
       try {
         for (const op of voteOperations(from, next)) {
-          latest = await runVoteOp(issueId, op)
+          latest = await runVoteOp(issueId, op, voterId)
           applied = voteAfterOp(applied, op)
-          useIssueVoteStore.getState().setVote(issueId, applied)
         }
+        if (latest) state.setVote(issueId, applied, nextSunk)
       } finally {
         if (latest) syncIssue(queryClient, latest)
       }
     },
     onMutate: async (next) => {
-      const from = useIssueVoteStore.getState().votes[issueId] ?? null
+      const state = useIssueVoteStore.getState()
+      const from = state.votes[issueId] ?? null
+      const sunk = state.sunk[issueId] ?? false
       await queryClient.cancelQueries({ queryKey: ['issue', issueId] })
       await queryClient.cancelQueries({ queryKey: ['issues'] })
       const snapshot = takeSnapshot(queryClient, issueId)
+      const nextSunk = previewSunk(scoreOf(snapshot, issueId), from, next, sunk)
       writeIssue(queryClient, issueId, (issue) => ({
         ...issue,
-        upvotes: issue.upvotes + voteDelta(from, next),
+        upvotes: previewScore(issue.upvotes, from, next, sunk),
       }))
-      useIssueVoteStore.getState().setPending(issueId, next)
+      useIssueVoteStore.getState().setPending(issueId, next, nextSunk)
       return { snapshot, from }
     },
     onError: (_error, _next, context) => {

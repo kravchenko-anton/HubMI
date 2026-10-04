@@ -25,6 +25,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { createIssue, uploadIssueImage } from '@/api/issues'
 import { GreenActionButton } from '@/components/green-action-button'
 import { ReportCamera } from '@/components/report-camera'
+import { useConfettiStore } from '@/stores/confetti-store'
 import { MAX_REPORT_PHOTOS, useMapSheetStore, type ReportLocation } from '@/stores/map-sheet-store'
 import { useMapViewportStore } from '@/stores/map-viewport-store'
 
@@ -108,6 +109,7 @@ export function ReportComposer({ paddingBottom }: { paddingBottom: number }) {
     mutationFn: sendCurrentDraft,
     onSuccess: (issue) => {
       queryClient.invalidateQueries({ queryKey: ['issues'] })
+      useConfettiStore.getState().play('top')
       setSent(true)
       setTimeout(() => finishReport(issue.title), 700)
     },

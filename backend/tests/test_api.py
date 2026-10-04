@@ -17,9 +17,13 @@ def test_flow():
         b = c.post("/issues", json={"category": "lighting", "title": "Dark street", "lat": 52.2300, "lng": 21.0130}).json()
         c.post("/issues", json={"category": "noise", "title": "Loud bar", "lat": 50.0, "lng": 19.9})
 
-        c.post(f"/issues/{b['id']}/upvote")
-        c.post(f"/issues/{b['id']}/upvote")
-        c.post(f"/issues/{a['id']}/upvote")
+        def vote(issue_id, voter, method="POST", direction="upvote"):
+            return c.request(method, f"/issues/{issue_id}/{direction}", headers={"X-Voter-Id": voter})
+
+        assert vote(b["id"], "b-1").json()["upvotes"] == 1
+        assert vote(b["id"], "b-1").json()["upvotes"] == 1
+        assert vote(b["id"], "b-2").json()["upvotes"] == 2
+        assert vote(a["id"], "a-up").json()["upvotes"] == 1
 
         rect = c.get("/issues", params={"min_lat": 52.2, "max_lat": 52.3, "min_lng": 21.0, "max_lng": 21.1}).json()
         assert [i["id"] for i in rect] == [b["id"], a["id"]]
@@ -27,26 +31,31 @@ def test_flow():
         similar = c.get("/issues/similar", params={"lat": 52.2298, "lng": 21.0123, "category": "traffic"}).json()
         assert [i["id"] for i in similar] == [a["id"]]
 
-        assert c.post(f"/issues/{a['id']}/downvote").json()["upvotes"] == 0
-        assert c.post(f"/issues/{a['id']}/downvote").json()["upvotes"] == -1
+        assert vote(a["id"], "a-up", direction="downvote").json()["upvotes"] == 0
+        assert vote(a["id"], "a-up", direction="downvote").json()["upvotes"] == 0
+        assert vote(a["id"], "a-up", method="DELETE", direction="downvote").json()["upvotes"] == 0
 
-        for _ in range(9):
-            c.post(f"/issues/{a['id']}/downvote")
+        assert vote(a["id"], "fresh", direction="downvote").json()["upvotes"] == 0
+        assert vote(a["id"], "fresh", direction="downvote").json()["upvotes"] == 0
+        for i in range(9):
+            vote(a["id"], f"down-{i}", direction="downvote")
         rect_params = {"min_lat": 52.2, "max_lat": 52.3, "min_lng": 21.0, "max_lng": 21.1}
-        assert a["id"] in [i["id"] for i in c.get("/issues", params=rect_params).json()]  # at -10
+        assert a["id"] in [i["id"] for i in c.get("/issues", params=rect_params).json()]  # raw -10
 
-        c.post(f"/issues/{a['id']}/downvote")  # -11: hidden
+        vote(a["id"], "down-9", direction="downvote")  # raw -11: hidden
         assert a["id"] not in [i["id"] for i in c.get("/issues", params=rect_params).json()]
         similar = c.get("/issues/similar", params={"lat": 52.2298, "lng": 21.0123, "category": "traffic"}).json()
         assert similar == []
-        assert c.get(f"/issues/{a['id']}").json()["upvotes"] == -11
+        assert c.get(f"/issues/{a['id']}").json()["upvotes"] == 0
 
-        assert c.post(f"/issues/{b['id']}/upvote").json()["upvotes"] == 3
-        assert c.delete(f"/issues/{b['id']}/upvote").json()["upvotes"] == 2
+        assert vote(b["id"], "b-3").json()["upvotes"] == 3
+        assert vote(b["id"], "b-3", method="DELETE").json()["upvotes"] == 2
 
-        assert c.post("/issues/9999/upvote").status_code == 404
-        assert c.delete("/issues/9999/upvote").status_code == 404
-        assert c.post("/issues/9999/downvote").status_code == 404
+        missing = {"X-Voter-Id": "missing"}
+        assert c.post("/issues/9999/upvote", headers=missing).status_code == 404
+        assert c.delete("/issues/9999/upvote", headers=missing).status_code == 404
+        assert c.post("/issues/9999/downvote", headers=missing).status_code == 404
+        assert c.delete("/issues/9999/downvote", headers=missing).status_code == 404
 
         fixed = c.post(
             f"/issues/{b['id']}/solve",

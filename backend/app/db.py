@@ -18,6 +18,12 @@ CREATE TABLE IF NOT EXISTS issues (
 );
 CREATE INDEX IF NOT EXISTS idx_issues_lat_lng ON issues (lat, lng);
 CREATE INDEX IF NOT EXISTS idx_issues_upvotes ON issues (upvotes DESC);
+CREATE TABLE IF NOT EXISTS issue_votes (
+    issue_id INTEGER NOT NULL,
+    voter_id TEXT    NOT NULL,
+    value    INTEGER NOT NULL CHECK (value IN (-1, 1)),
+    PRIMARY KEY (issue_id, voter_id)
+);
 """
 
 
