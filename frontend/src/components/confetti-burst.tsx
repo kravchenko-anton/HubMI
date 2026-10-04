@@ -1,10 +1,11 @@
+'use no memo'
+
 import { useEffect, useMemo } from 'react'
 import { StyleSheet, useWindowDimensions, View } from 'react-native'
 import Animated, {
   Easing,
   useAnimatedStyle,
   useSharedValue,
-  withDelay,
   withTiming,
 } from 'react-native-reanimated'
 
@@ -61,7 +62,7 @@ function makePieces(origin: ConfettiOrigin, seed: number): Piece[] {
     return {
       x: rand(),
       delay: origin === 'top' ? rand() * 280 : rand() * 140,
-      duration: origin === 'top' ? 1300 + rand() * 500 : 1400 + rand() * 500,
+      duration: origin === 'top' ? 1100 + rand() * 400 : 1400 + rand() * 500,
       drift: (rand() - 0.5) * 90,
       flutter: 1.5 + rand() * 2.5,
       wobble: 12 + rand() * 18,
@@ -77,6 +78,8 @@ function makePieces(origin: ConfettiOrigin, seed: number): Piece[] {
   })
 }
 
+let confettiStarts = 0
+
 function ConfettiPiece({
   origin,
   width,
@@ -91,17 +94,22 @@ function ConfettiPiece({
   const progress = useSharedValue(0)
 
   useEffect(() => {
-    progress.value = withDelay(
-      piece.delay,
-      withTiming(1, { duration: piece.duration, easing: Easing.linear }),
-    )
+    confettiStarts += 1
+    if (typeof window !== 'undefined') {
+      ;(window as Window & { __confettiStarts?: number }).__confettiStarts = confettiStarts
+    }
+    const duration = Math.max(1, Math.round(piece.duration))
+    const timer = setTimeout(() => {
+      progress.value = withTiming(1, { duration, easing: Easing.linear })
+    }, Math.round(piece.delay))
+    return () => clearTimeout(timer)
   }, [piece.delay, piece.duration, progress])
 
   const style = useAnimatedStyle(() => {
     const t = progress.value
     const fade = t > 0.78 ? Math.max(0, (1 - t) / 0.22) : t === 0 ? 0 : 1
     if (origin === 'top') {
-      const fall = t * 0.62 + t * t * 0.38
+      const fall = t * 0.72 + t * t * 0.28
       const sway = Math.sin(t * piece.flutter * Math.PI * 2) * piece.wobble
       return {
         opacity: fade,
