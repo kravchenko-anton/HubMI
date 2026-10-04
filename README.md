@@ -1,4 +1,4 @@
-# HubMI
+# Smart city
 
 An app for reporting city problems on a map (missing crosswalks, dark streets, noisy bars) and upvoting the ones that matter.
 
