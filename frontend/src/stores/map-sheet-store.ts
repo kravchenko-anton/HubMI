@@ -1,13 +1,14 @@
 import { create } from 'zustand';
 
-import type { Issue } from '@/api/issues';
+import type { Issue, IssueCategory } from '@/api/issues';
 import { USER_ZOOM } from '@/constants/map';
 import { useMapViewportStore, type LngLat } from '@/stores/map-viewport-store';
 
-export type MapSheetContent = 'home' | 'reports' | 'compose' | 'pick-location' | 'issue';
+export type MapSheetContent = 'home' | 'reports' | 'compose' | 'pick-location' | 'issue' | 'solve';
 
 export type ReportCategory = {
   id: string;
+  api: IssueCategory;
   label: string;
   emoji: string;
   tint: string;
@@ -78,7 +79,10 @@ type MapSheetState = {
   beginPickLocation: () => void;
   cancelPickLocation: () => void;
   setPickedLocation: (location: ReportLocation) => void;
-  submitReport: () => void;
+  finishReport: (label: string) => void;
+  openSolve: () => void;
+  cancelSolve: () => void;
+  finishSolve: () => void;
   clearNotice: () => void;
 };
 
@@ -173,10 +177,7 @@ export const useMapSheetStore = create<MapSheetState>((set, get) => ({
       ...route(['home', 'reports', 'compose']),
       draft: { ...state.draft, location },
     })),
-  submitReport: () => {
-    const { draft } = get();
-    if (!draft.category || !draft.location) return;
-    const label = draft.title.trim() || draft.category.label;
+  finishReport: (label) => {
     leaveReportFlow();
     set((state) => ({
       ...route(HOME_STACK),
@@ -185,6 +186,20 @@ export const useMapSheetStore = create<MapSheetState>((set, get) => ({
       reportCount: state.reportCount + 1,
       notice: `Reported: ${label}`,
     }));
+  },
+  openSolve: () => {
+    if (!get().selectedIssue) return;
+    set({ ...route(['home', 'issue', 'solve']) });
+  },
+  cancelSolve: () => set({ ...route(['home', 'issue']) }),
+  finishSolve: () => {
+    leaveReportFlow();
+    set({
+      ...route(HOME_STACK),
+      draft: emptyDraft(),
+      selectedIssue: null,
+      notice: 'Marked as solved',
+    });
   },
   clearNotice: () => set({ notice: null }),
 }));

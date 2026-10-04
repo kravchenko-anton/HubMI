@@ -1,11 +1,19 @@
 import { BottomSheetScrollView } from '@gorhom/bottom-sheet'
 import { Image } from 'expo-image'
-import { SymbolView } from 'expo-symbols'
-import { useState } from 'react'
+import { SymbolView, type SymbolViewProps } from 'expo-symbols'
+import { useEffect, useRef, useState } from 'react'
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native'
-import Animated from 'react-native-reanimated'
+import Animated, {
+  interpolateColor,
+  useAnimatedStyle,
+  useSharedValue,
+  withSequence,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated'
 
 import { issueImageUri, type Issue } from '@/api/issues'
+import { GreenActionButton } from '@/components/green-action-button'
 import { useCastIssueVote, useIssueDetails } from '@/hooks/use-issue'
 import { usePressScale } from '@/hooks/use-press-scale'
 import {
@@ -15,8 +23,15 @@ import {
   issueCategoryMeta,
   voteLabel,
 } from '@/lib/issue-categories'
+import type { IssueVote } from '@/lib/issue-votes'
 import { useMapSheetStore } from '@/stores/map-sheet-store'
 import { useMapViewportStore } from '@/stores/map-viewport-store'
+
+const VOTE_IDLE = '#F4F2F8'
+const VOTE_UP = '#F5C518'
+const VOTE_DOWN = '#FF453A'
+const POP = { damping: 8, stiffness: 280 }
+const SETTLE = { damping: 12, stiffness: 220 }
 
 export function IssueDetail({
   issue,
@@ -28,9 +43,8 @@ export function IssueDetail({
   onContentHeight?: (height: number) => void
 }) {
   const closeIssue = useMapSheetStore((state) => state.closeIssue)
+  const openSolve = useMapSheetStore((state) => state.openSolve)
   const backPress = usePressScale()
-  const upPress = usePressScale()
-  const downPress = usePressScale()
   const center = useMapViewportStore((state) => state.center)
   const query = useIssueDetails(issue)
   const shown = query.data ?? issue
@@ -67,6 +81,14 @@ export function IssueDetail({
             />
           </Pressable>
         </Animated.View>
+        {shown.solved_at ? null : (
+          <GreenActionButton
+            label="I solved this"
+            accessibilityLabel="Mark this problem as solved"
+            onPress={openSolve}
+            style={styles.solve}
+          />
+        )}
       </View>
 
       <View style={styles.photo}>
@@ -100,68 +122,142 @@ export function IssueDetail({
       </Text>
 
       <View style={styles.voteRow}>
-        <Animated.View style={upPress.style}>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={vote === 'up' ? 'Remove upvote' : 'Upvote'}
-            accessibilityState={{ selected: vote === 'up', disabled: busy }}
-            disabled={busy}
-            onPress={() => cast('up')}
-            onPressIn={upPress.onPressIn}
-            onPressOut={upPress.onPressOut}
-            style={[
-              styles.voteButton,
-              vote === 'up' && styles.voteUpOn,
-              spinning === 'up' && styles.pressed,
-            ]}>
-            {spinning === 'up' ? (
-              <ActivityIndicator color={vote === 'up' ? '#16141A' : '#8A6A00'} />
-            ) : (
-              <SymbolView
-                name={{ ios: 'hand.thumbsup.fill', android: 'thumb_up', web: 'thumb_up' }}
-                size={22}
-                tintColor={vote === 'up' ? '#16141A' : '#8A6A00'}
-              />
-            )}
-          </Pressable>
-        </Animated.View>
-        <Text
-          style={[
-            styles.voteCount,
-            vote === 'up' && styles.voteCountUp,
-            vote === 'down' && styles.voteCountDown,
-          ]}>
-          {voteLabel(score)}
-        </Text>
-        <Animated.View style={downPress.style}>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={vote === 'down' ? 'Remove downvote' : 'Downvote'}
-            accessibilityState={{ selected: vote === 'down', disabled: busy }}
-            disabled={busy}
-            onPress={() => cast('down')}
-            onPressIn={downPress.onPressIn}
-            onPressOut={downPress.onPressOut}
-            style={[
-              styles.voteButton,
-              vote === 'down' && styles.voteDownOn,
-              spinning === 'down' && styles.pressed,
-            ]}>
-            {spinning === 'down' ? (
-              <ActivityIndicator color={vote === 'down' ? '#FFFFFF' : '#FF453A'} />
-            ) : (
-              <SymbolView
-                name={{ ios: 'hand.thumbsdown.fill', android: 'thumb_down', web: 'thumb_down' }}
-                size={22}
-                tintColor={vote === 'down' ? '#FFFFFF' : '#FF453A'}
-              />
-            )}
-          </Pressable>
-        </Animated.View>
+        <VoteButton
+          active={vote === 'up'}
+          activeColor={VOTE_UP}
+          idleTint="#8A6A00"
+          activeTint="#16141A"
+          spinning={spinning === 'up'}
+          disabled={busy}
+          label={vote === 'up' ? 'Remove upvote' : 'Upvote'}
+          icon={{ ios: 'hand.thumbsup.fill', android: 'thumb_up', web: 'thumb_up' }}
+          tilt={-14}
+          onPress={() => cast('up')}
+        />
+        <VoteCount score={score} vote={vote} />
+        <VoteButton
+          active={vote === 'down'}
+          activeColor={VOTE_DOWN}
+          idleTint={VOTE_DOWN}
+          activeTint="#FFFFFF"
+          spinning={spinning === 'down'}
+          disabled={busy}
+          label={vote === 'down' ? 'Remove downvote' : 'Downvote'}
+          icon={{ ios: 'hand.thumbsdown.fill', android: 'thumb_down', web: 'thumb_down' }}
+          tilt={14}
+          onPress={() => cast('down')}
+        />
       </View>
       {isError ? <Text style={styles.error}>Could not vote</Text> : null}
       </View>
     </BottomSheetScrollView>
+  )
+}
+
+function VoteButton({
+  active,
+  activeColor,
+  idleTint,
+  activeTint,
+  spinning,
+  disabled,
+  label,
+  icon,
+  tilt,
+  onPress,
+}: {
+  active: boolean
+  activeColor: string
+  idleTint: string
+  activeTint: string
+  spinning: boolean
+  disabled: boolean
+  label: string
+  icon: SymbolViewProps['name']
+  tilt: number
+  onPress: () => void
+}) {
+  const press = usePressScale()
+  const fill = useSharedValue(active ? 1 : 0)
+  const pop = useSharedValue(1)
+  const turn = useSharedValue(0)
+  const wasActive = useRef(active)
+
+  useEffect(() => {
+    const becameActive = active && !wasActive.current
+    wasActive.current = active
+    fill.value = withTiming(active ? 1 : 0, { duration: 200 })
+    if (!becameActive) {
+      pop.value = withTiming(1, { duration: 180 })
+      turn.value = withTiming(0, { duration: 180 })
+      return
+    }
+    pop.value = withSequence(withSpring(1.22, POP), withSpring(1, SETTLE))
+    turn.value = withSequence(withTiming(tilt, { duration: 140 }), withSpring(0, SETTLE))
+  }, [active, fill, pop, tilt, turn])
+
+  const buttonStyle = useAnimatedStyle(() => ({
+    backgroundColor: interpolateColor(fill.value, [0, 1], [VOTE_IDLE, activeColor]),
+  }))
+  const iconStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: pop.value }, { rotate: `${turn.value}deg` }],
+  }))
+
+  return (
+    <Animated.View style={press.style}>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={label}
+        accessibilityState={{ selected: active, disabled }}
+        disabled={disabled}
+        onPress={onPress}
+        onPressIn={press.onPressIn}
+        onPressOut={press.onPressOut}>
+        <Animated.View style={[styles.voteButton, buttonStyle]}>
+          <Animated.View style={iconStyle}>
+            <SymbolView name={icon} size={22} tintColor={active ? activeTint : idleTint} />
+          </Animated.View>
+          {spinning ? (
+            <ActivityIndicator
+              style={styles.voteSpinner}
+              size="small"
+              color={active ? activeTint : idleTint}
+            />
+          ) : null}
+        </Animated.View>
+      </Pressable>
+    </Animated.View>
+  )
+}
+
+function VoteCount({ score, vote }: { score: number; vote: IssueVote | null }) {
+  const scale = useSharedValue(1)
+  const seen = useRef<number | null>(null)
+
+  useEffect(() => {
+    if (seen.current == null) {
+      seen.current = score
+      return
+    }
+    if (seen.current === score) return
+    seen.current = score
+    scale.value = withSequence(withSpring(1.16, POP), withSpring(1, SETTLE))
+  }, [scale, score])
+
+  const style = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }))
+
+  return (
+    <Animated.Text
+      style={[
+        styles.voteCount,
+        vote === 'up' && styles.voteCountUp,
+        vote === 'down' && styles.voteCountDown,
+        style,
+      ]}>
+      {voteLabel(score)}
+    </Animated.Text>
   )
 }
 
@@ -174,6 +270,10 @@ const styles = StyleSheet.create({
   toolbar: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 10,
+  },
+  solve: {
+    flex: 1,
   },
   back: {
     width: 36,
@@ -249,15 +349,14 @@ const styles = StyleSheet.create({
     width: 64,
     height: 52,
     borderRadius: 26,
-    backgroundColor: '#F4F2F8',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  voteUpOn: {
-    backgroundColor: '#F5C518',
-  },
-  voteDownOn: {
-    backgroundColor: '#FF453A',
+  voteSpinner: {
+    position: 'absolute',
+    top: 4,
+    right: 6,
+    transform: [{ scale: 0.65 }],
   },
   voteCount: {
     flex: 1,
@@ -276,8 +375,5 @@ const styles = StyleSheet.create({
     color: '#FF453A',
     fontSize: 14,
     textAlign: 'center',
-  },
-  pressed: {
-    opacity: 0.7,
   },
 })

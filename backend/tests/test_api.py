@@ -5,7 +5,7 @@ os.environ["HUBMI_SEED"] = "0"
 
 from fastapi.testclient import TestClient  # noqa: E402
 
-from app.main import app  # noqa: E402
+from app.main import MEDIA_DIR, app  # noqa: E402
 
 
 def test_flow():
@@ -46,4 +46,28 @@ def test_flow():
         assert c.post("/issues/9999/upvote").status_code == 404
         assert c.delete("/issues/9999/upvote").status_code == 404
         assert c.post("/issues/9999/downvote").status_code == 404
+
+        fixed = c.post(
+            f"/issues/{b['id']}/solve",
+            json={"note": "Light is back", "image_url": "/media/fixed.jpg"},
+        ).json()
+        assert fixed["solve_note"] == "Light is back"
+        assert fixed["solve_image_url"] == "/media/fixed.jpg"
+        assert fixed["solved_at"]
+        assert b["id"] not in [i["id"] for i in c.get("/issues", params=rect_params).json()]
+        similar = c.get("/issues/similar", params={"lat": 52.23, "lng": 21.013, "category": "lighting"}).json()
+        assert similar == []
+        assert c.get(f"/issues/{b['id']}").json()["solved_at"]
+        assert c.post(f"/issues/{b['id']}/solve", json={}).status_code == 409
+        assert c.post("/issues/9999/solve", json={}).status_code == 404
+
+        uploaded = c.post(
+            "/media",
+            files={"file": ("shot.jpg", b"\xff\xd8\xff\xd9", "image/jpeg")},
+        )
+        assert uploaded.status_code == 201
+        image_url = uploaded.json()["image_url"]
+        assert image_url.startswith("/media/")
+        assert image_url.endswith(".jpg")
+        (MEDIA_DIR / image_url.rsplit("/", 1)[-1]).unlink(missing_ok=True)
     os.remove("test_hubmi.db")

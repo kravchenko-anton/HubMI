@@ -30,6 +30,15 @@ export function syncIssue(queryClient: QueryClient, issue: Issue) {
   writeIssue(queryClient, issue.id, () => issue)
 }
 
+export function dropIssue(queryClient: QueryClient, id: number) {
+  queryClient.setQueriesData<Issue[]>({ queryKey: ['issues'] }, (current) => {
+    if (!current) return current
+    const next = current.filter((item) => item.id !== id)
+    return next.length === current.length ? current : next
+  })
+  queryClient.removeQueries({ queryKey: ['issue', id] })
+}
+
 type VoteSnapshot = {
   lists: [QueryKey, Issue[] | undefined][]
   detail: Issue | undefined

@@ -30,6 +30,18 @@ export type Issue = {
   image_url: string | null
   upvotes: number
   created_at: string
+  solved_at?: string | null
+  solve_note?: string
+  solve_image_url?: string | null
+}
+
+export type IssueDraft = {
+  category: IssueCategory
+  title: string
+  description: string
+  lat: number
+  lng: number
+  image_url?: string | null
 }
 
 /** Backend `HIDDEN_BELOW`. `GET /issues` keeps a row only when `upvotes` is at least this. */
@@ -91,4 +103,69 @@ export function removeUpvote(id: number) {
 
 export function downvoteIssue(id: number) {
   return sendIssueVote(id, 'downvote', 'POST')
+}
+
+function imageName(uri: string) {
+  const raw = uri.split('/').pop()?.split('?')[0] || 'photo.jpg'
+  return raw.includes('.') ? raw : `${raw}.jpg`
+}
+
+function imageType(name: string) {
+  const lower = name.toLowerCase()
+  if (lower.endsWith('.png')) return 'image/png'
+  if (lower.endsWith('.webp')) return 'image/webp'
+  if (lower.endsWith('.heic') || lower.endsWith('.heif')) return 'image/heic'
+  return 'image/jpeg'
+}
+
+export async function uploadIssueImage(uri: string): Promise<string> {
+  const name = imageName(uri)
+  const form = new FormData()
+  if (uri.startsWith('blob:') || uri.startsWith('data:') || /^https?:\/\//i.test(uri)) {
+    const blob = await (await fetch(uri)).blob()
+    form.append('file', blob, name)
+  } else {
+    form.append('file', { uri, name, type: imageType(name) } as unknown as Blob)
+  }
+
+  const response = await fetch(`${API_BASE_URL}/media`, { method: 'POST', body: form })
+  if (!response.ok) {
+    throw new Error(`Image upload failed (${response.status})`)
+  }
+  const body = (await response.json()) as { image_url: string }
+  return body.image_url
+}
+
+export async function createIssue(draft: IssueDraft): Promise<Issue> {
+  const response = await fetch(`${API_BASE_URL}/issues`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      category: draft.category,
+      title: draft.title,
+      description: draft.description,
+      lat: draft.lat,
+      lng: draft.lng,
+      image_url: draft.image_url ?? null,
+    }),
+  })
+  if (!response.ok) {
+    throw new Error(`Create issue failed (${response.status})`)
+  }
+  return (await response.json()) as Issue
+}
+
+export async function solveIssue(
+  id: number,
+  payload: { note: string; image_url: string | null },
+): Promise<Issue> {
+  const response = await fetch(`${API_BASE_URL}/issues/${id}/solve`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+  if (!response.ok) {
+    throw new Error(`Solve request failed (${response.status})`)
+  }
+  return (await response.json()) as Issue
 }

@@ -2,7 +2,7 @@ import BottomSheet, { BottomSheetModal, BottomSheetView } from '@gorhom/bottom-s
 import { SymbolView } from 'expo-symbols'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native'
-import { useSharedValue, type SharedValue } from 'react-native-reanimated'
+import Animated, { useSharedValue, type SharedValue } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { IssueDetail } from '@/components/issue-detail'
@@ -15,14 +15,16 @@ import {
   SheetStack,
   type SheetPage,
 } from '@/components/sheet-stack'
-import { sheetMotion, useMapSheetStore } from '@/stores/map-sheet-store'
+import { SolveComposer } from '@/components/solve-composer'
+import { usePressScale } from '@/hooks/use-press-scale'
+import { sheetMotion, useMapSheetStore, type ReportCategory } from '@/stores/map-sheet-store'
 
 const SHEET_BACKGROUND = '#FEFDFF'
 const SHEET_CONTENT_PADDING_BOTTOM = 20
 const DOCK_BODY = 168
 const REPORT_ROW = 72 + 8 + 16 + 22
 const REPORTS_BODY = 4 + 36 + 22 + REPORT_ROW * 3
-const ISSUE_BODY = 4 + 36 + 12 * 5 + 240 + 34 + 26 + 22 + 52
+const ISSUE_BODY = 4 + 36 + 12 * 6 + 240 + 34 + 26 + 22 + 52 + 64
 
 function keepHeight(current: number, next: number) {
   if (next <= 0 || Math.abs(current - next) < 2) return current
@@ -31,17 +33,17 @@ function keepHeight(current: number, next: number) {
 
 export const REPORT_BUTTON_GAP = 20
 
-const REPORTS = [
-  { id: 'light', label: 'Lighting', emoji: '💡', tint: '#FFF4CC' },
-  { id: 'road', label: 'Road', emoji: '🚧', tint: '#FFE8D6' },
-  { id: 'waste', label: 'Trash', emoji: '🗑️', tint: '#E5F6EC' },
-  { id: 'loud', label: 'Noise', emoji: '📢', tint: '#F3E8FF' },
-  { id: 'access', label: 'Accessibility', emoji: '♿', tint: '#E8F1FF' },
-  { id: 'animals', label: 'Animals', emoji: '🐾', tint: '#FFE8F0' },
-  { id: 'vandalism', label: 'Vandalism', emoji: '🎨', tint: '#FDE8F3' },
-  { id: 'nature', label: 'Nature', emoji: '🍂', tint: '#E7F6E9' },
-  { id: 'other', label: 'Other', emoji: '❓', tint: '#F0EEEA' },
-] as const
+const REPORTS: ReportCategory[] = [
+  { id: 'lighting', api: 'lighting', label: 'Lighting', emoji: '💡', tint: '#FFF4CC' },
+  { id: 'traffic', api: 'traffic', label: 'Road', emoji: '🚧', tint: '#FFE8D6' },
+  { id: 'cleanliness', api: 'cleanliness', label: 'Trash', emoji: '🗑️', tint: '#E5F6EC' },
+  { id: 'noise', api: 'noise', label: 'Noise', emoji: '📢', tint: '#F3E8FF' },
+  { id: 'infrastructure', api: 'infrastructure', label: 'Accessibility', emoji: '♿', tint: '#E8F1FF' },
+  { id: 'animals', api: 'safety', label: 'Animals', emoji: '🐾', tint: '#FFE8F0' },
+  { id: 'vandalism', api: 'safety', label: 'Vandalism', emoji: '🎨', tint: '#FDE8F3' },
+  { id: 'nature', api: 'other', label: 'Nature', emoji: '🍂', tint: '#E7F6E9' },
+  { id: 'other', api: 'other', label: 'Other', emoji: '❓', tint: '#F0EEEA' },
+]
 
 export function MapBottomSheet({
   homePosition,
@@ -95,7 +97,7 @@ export function MapBottomSheet({
   const overlayMax = Math.max(Math.round(sheetContainerHeight * 0.9), dockHeight)
   const pageSnap = useCallback(
     (page: SheetPage) => {
-      if (page === 'compose') return overlayMax
+      if (page === 'compose' || page === 'solve') return overlayMax
       const body =
         page === 'reports'
           ? reportsHeight || REPORTS_BODY + paddingBottom
@@ -105,14 +107,17 @@ export function MapBottomSheet({
     [issueHeight, overlayMax, paddingBottom, reportsHeight],
   )
   const overlayPage =
-    content === 'issue' || content === 'reports' || content === 'compose' ? content : null
+    content === 'issue' || content === 'reports' || content === 'compose' || content === 'solve'
+      ? content
+      : null
   const overlayCandidates = [overlayPage, settledPage].filter(
     (page): page is SheetPage => page != null,
   )
   const resolvedDock = dockContentHeight > 0 ? dockContentHeight + SHEET_CHROME : dockHeight
   const overlaySnap = picking
     ? resolvedDock
-    : overlayCandidates.length === 0 || overlayCandidates.some((page) => page === 'compose')
+    : overlayCandidates.length === 0 ||
+        overlayCandidates.some((page) => page === 'compose' || page === 'solve')
       ? overlayMax
       : Math.max(...overlayCandidates.map(pageSnap))
   if (content !== 'home') lastOverlaySnap.current = overlaySnap
@@ -124,6 +129,9 @@ export function MapBottomSheet({
   const renderPage = useCallback(
     (page: SheetPage) => {
       if (page === 'compose') return <ReportComposer paddingBottom={paddingBottom} />
+      if (page === 'solve' && selectedIssue) {
+        return <SolveComposer issue={selectedIssue} paddingBottom={paddingBottom} />
+      }
       if (page === 'issue' && selectedIssue) {
         return (
           <IssueDetail
@@ -284,20 +292,30 @@ function ReportsContent() {
 
       <View style={styles.grid}>
         {REPORTS.map((item) => (
-          <Pressable
-            key={item.id}
-            accessibilityRole="button"
-            accessibilityLabel={item.label}
-            onPress={() => startReport(item)}
-            style={({ pressed }) => [styles.cell, pressed && styles.pressed]}>
-            <View style={[styles.iconCircle, { backgroundColor: item.tint }]}>
-              <Text style={styles.emoji}>{item.emoji}</Text>
-            </View>
-            <Text style={styles.iconLabel}>{item.label}</Text>
-          </Pressable>
+          <ReportCell key={item.id} item={item} onPress={() => startReport(item)} />
         ))}
       </View>
     </View>
+  )
+}
+
+function ReportCell({ item, onPress }: { item: ReportCategory; onPress: () => void }) {
+  const press = usePressScale(0.94)
+  return (
+    <Animated.View style={[styles.cell, press.style]}>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={item.label}
+        onPress={onPress}
+        onPressIn={press.onPressIn}
+        onPressOut={press.onPressOut}
+        style={styles.cellPress}>
+        <View style={[styles.iconCircle, { backgroundColor: item.tint }]}>
+          <Text style={styles.emoji}>{item.emoji}</Text>
+        </View>
+        <Text style={styles.iconLabel}>{item.label}</Text>
+      </Pressable>
+    </Animated.View>
   )
 }
 
@@ -349,9 +367,11 @@ const styles = StyleSheet.create({
   },
   cell: {
     width: '33.33%',
-    alignItems: 'center',
     marginBottom: 22,
     paddingHorizontal: 4,
+  },
+  cellPress: {
+    alignItems: 'center',
   },
   iconCircle: {
     width: 72,

@@ -13,7 +13,7 @@ import Animated, {
 
 import { sheetMotion, useMapSheetStore, type MapSheetContent } from '@/stores/map-sheet-store'
 
-export type SheetPage = 'issue' | 'reports' | 'compose'
+export type SheetPage = 'issue' | 'reports' | 'compose' | 'solve'
 
 const NAV_SPRING = { damping: 22, stiffness: 240, mass: 0.8 }
 const EDGE_WIDTH = 24
@@ -30,7 +30,7 @@ type Motion = 'idle' | 'push' | 'pop'
 export function overlayPages(stack: MapSheetContent[]): SheetPage[] {
   const pages: SheetPage[] = []
   for (const name of stack) {
-    if (name === 'issue' || name === 'reports' || name === 'compose') pages.push(name)
+    if (name === 'issue' || name === 'reports' || name === 'compose' || name === 'solve') pages.push(name)
   }
   return pages
 }
@@ -130,10 +130,15 @@ export function SheetStack({
 
   const finishGesturePop = useCallback(() => {
     setSkipMotion(true)
-    const { content, cancelCompose, closeIssue, showHome } = useMapSheetStore.getState()
+    const { content, cancelCompose, cancelSolve, closeIssue, showHome } = useMapSheetStore.getState()
     if (content === 'compose') {
       Keyboard.dismiss()
       cancelCompose()
+      return
+    }
+    if (content === 'solve') {
+      Keyboard.dismiss()
+      cancelSolve()
       return
     }
     sheetMotion.instantDismiss = true
@@ -245,6 +250,7 @@ const styles = StyleSheet.create({
   },
   page: {
     flex: 1,
+    backgroundColor: '#FEFDFF',
   },
   under: {
     ...StyleSheet.absoluteFill,

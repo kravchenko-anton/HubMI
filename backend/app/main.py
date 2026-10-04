@@ -1,11 +1,12 @@
 import math
 import os
+import uuid
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, File, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
@@ -40,6 +41,18 @@ class Issue(IssueCreate):
     id: int
     upvotes: int
     created_at: datetime
+    solved_at: datetime | None = None
+    solve_note: str = ""
+    solve_image_url: str | None = None
+
+
+class IssueSolve(BaseModel):
+    note: str = Field(default="", max_length=2000)
+    image_url: str | None = Field(default=None, max_length=500)
+
+
+class MediaUpload(BaseModel):
+    image_url: str
 
 
 class SimilarIssue(Issue):
@@ -108,7 +121,10 @@ def query_issues(
     """Issues inside the map rectangle, most upvoted first."""
     if min_lat > max_lat or min_lng > max_lng:
         raise HTTPException(400, "min values must be <= max values")
-    sql = "SELECT * FROM issues WHERE upvotes >= ? AND lat BETWEEN ? AND ? AND lng BETWEEN ? AND ?"
+    sql = (
+        "SELECT * FROM issues WHERE solved_at IS NULL AND upvotes >= ?"
+        " AND lat BETWEEN ? AND ? AND lng BETWEEN ? AND ?"
+    )
     params: list = [HIDDEN_BELOW, min_lat, max_lat, min_lng, max_lng]
     if category:
         sql += " AND category = ?"
@@ -131,7 +147,10 @@ def similar_issues(
     """Nearby issues to show before submitting a new one, to avoid duplicates."""
     dlat = math.degrees(radius_m / EARTH_RADIUS_M)
     dlng = dlat / max(math.cos(math.radians(lat)), 1e-6)
-    sql = "SELECT * FROM issues WHERE upvotes >= ? AND lat BETWEEN ? AND ? AND lng BETWEEN ? AND ?"
+    sql = (
+        "SELECT * FROM issues WHERE solved_at IS NULL AND upvotes >= ?"
+        " AND lat BETWEEN ? AND ? AND lng BETWEEN ? AND ?"
+    )
     params: list = [HIDDEN_BELOW, lat - dlat, lat + dlat, lng - dlng, lng + dlng]
     if category:
         sql += " AND category = ?"
@@ -176,3 +195,50 @@ def remove_upvote(issue_id: int):
 def downvote_issue(issue_id: int):
     """Removes one vote; the count can go negative and hides the issue below HIDDEN_BELOW."""
     return change_votes(issue_id, -1)
+
+
+IMAGE_TYPES = {
+    "image/jpeg": ".jpg",
+    "image/jpg": ".jpg",
+    "image/png": ".png",
+    "image/webp": ".webp",
+    "image/heic": ".heic",
+    "image/heif": ".heic",
+}
+MAX_IMAGE_BYTES = 8_000_000
+
+
+@app.post("/media", response_model=MediaUpload, status_code=201)
+async def upload_media(file: UploadFile = File(...)):
+    suffix = IMAGE_TYPES.get((file.content_type or "").lower())
+    if suffix is None:
+        guessed = Path(file.filename or "").suffix.lower()
+        suffix = guessed if guessed in {".jpg", ".jpeg", ".png", ".webp", ".heic"} else None
+    if suffix == ".jpeg":
+        suffix = ".jpg"
+    if suffix is None:
+        raise HTTPException(415, "Upload a JPEG, PNG, WebP, or HEIC image")
+    data = await file.read()
+    if not data:
+        raise HTTPException(400, "Empty image")
+    if len(data) > MAX_IMAGE_BYTES:
+        raise HTTPException(413, "Image is too large")
+    name = f"{uuid.uuid4().hex}{suffix}"
+    (MEDIA_DIR / name).write_bytes(data)
+    return MediaUpload(image_url=f"/media/{name}")
+
+
+@app.post("/issues/{issue_id}/solve", response_model=Issue)
+def solve_issue(issue_id: int, payload: IssueSolve):
+    now = datetime.now(timezone.utc).isoformat()
+    with get_conn() as conn:
+        row = conn.execute("SELECT solved_at FROM issues WHERE id = ?", (issue_id,)).fetchone()
+        if row is None:
+            raise HTTPException(404, "Issue not found")
+        if row["solved_at"]:
+            raise HTTPException(409, "Issue is already solved")
+        conn.execute(
+            "UPDATE issues SET solved_at = ?, solve_note = ?, solve_image_url = ? WHERE id = ?",
+            (now, payload.note, payload.image_url, issue_id),
+        )
+    return fetch_issue(issue_id)

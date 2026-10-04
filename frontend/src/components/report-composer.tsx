@@ -8,6 +8,7 @@ import * as ImagePicker from 'expo-image-picker'
 import * as Location from 'expo-location'
 import { SymbolView } from 'expo-symbols'
 import { useEffect, useRef, useState } from 'react'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   ActivityIndicator,
   Keyboard,
@@ -21,6 +22,8 @@ import {
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
+import { createIssue, uploadIssueImage } from '@/api/issues'
+import { GreenActionButton } from '@/components/green-action-button'
 import { ReportCamera } from '@/components/report-camera'
 import { MAX_REPORT_PHOTOS, useMapSheetStore, type ReportLocation } from '@/stores/map-sheet-store'
 import { useMapViewportStore } from '@/stores/map-viewport-store'
@@ -67,6 +70,23 @@ export async function pickReportPhotos(): Promise<'added' | 'cancel' | string> {
   }
 }
 
+async function sendCurrentDraft() {
+  const { draft } = useMapSheetStore.getState()
+  if (!draft.category || !draft.location) throw new Error('Missing details')
+  const typed = draft.title.trim()
+  const title = typed || draft.category.label
+  if (title.length < 3) throw new Error('Title must be at least 3 characters')
+  const imageUrl = draft.photos[0] ? await uploadIssueImage(draft.photos[0].uri) : null
+  return createIssue({
+    category: draft.category.api,
+    title,
+    description: draft.description.trim(),
+    lat: draft.location.latitude,
+    lng: draft.location.longitude,
+    image_url: imageUrl,
+  })
+}
+
 export function ReportComposer({ paddingBottom }: { paddingBottom: number }) {
   const category = useMapSheetStore((state) => state.draft.category)
   const photos = useMapSheetStore((state) => state.draft.photos)
@@ -80,7 +100,25 @@ export function ReportComposer({ paddingBottom }: { paddingBottom: number }) {
   const removePhoto = useMapSheetStore((state) => state.removePhoto)
   const setUserLocation = useMapSheetStore((state) => state.setUserLocation)
   const beginPickLocation = useMapSheetStore((state) => state.beginPickLocation)
-  const submitReport = useMapSheetStore((state) => state.submitReport)
+  const finishReport = useMapSheetStore((state) => state.finishReport)
+  const queryClient = useQueryClient()
+  const [sendError, setSendError] = useState<string | null>(null)
+  const [sent, setSent] = useState(false)
+  const sendReport = useMutation({
+    mutationFn: sendCurrentDraft,
+    onSuccess: (issue) => {
+      queryClient.invalidateQueries({ queryKey: ['issues'] })
+      setSent(true)
+      setTimeout(() => finishReport(issue.title), 700)
+    },
+    onError: (error: Error) => {
+      setSendError(
+        error.message === 'Title must be at least 3 characters'
+          ? error.message
+          : 'Could not send the report',
+      )
+    },
+  })
   const scrollRef = useRef<BottomSheetScrollViewMethods>(null)
   const titleOffset = useRef(0)
   const descriptionOffset = useRef(0)
@@ -136,7 +174,9 @@ export function ReportComposer({ paddingBottom }: { paddingBottom: number }) {
   if (!category) return null
 
   const room = MAX_REPORT_PHOTOS - photos.length
-  const canSend = location != null && !locating
+  const typedTitle = title.trim()
+  const shortTitle = typedTitle.length > 0 && typedTitle.length < 3
+  const canSend = location != null && !locating && !shortTitle && !sendReport.isPending && !sent
 
   const revealField = (offset: number) => {
     setTimeout(() => {
@@ -314,18 +354,21 @@ export function ReportComposer({ paddingBottom }: { paddingBottom: number }) {
         />
       </View>
 
-      <Pressable
-        accessibilityRole="button"
+      {shortTitle ? <Text style={styles.error}>Title must be at least 3 characters</Text> : null}
+      {sendError ? <Text style={styles.error}>{sendError}</Text> : null}
+      <GreenActionButton
+        label="Send report"
         accessibilityLabel="Send report"
-        accessibilityState={{ disabled: !canSend }}
         disabled={!canSend}
+        busy={sendReport.isPending}
+        success={sent}
         onPress={() => {
           Keyboard.dismiss()
-          submitReport()
+          if (!canSend) return
+          setSendError(null)
+          sendReport.mutate()
         }}
-        style={({ pressed }) => [styles.send, !canSend && styles.sendDisabled, pressed && canSend && styles.pressed]}>
-        <Text style={styles.sendText}>Send report</Text>
-      </Pressable>
+      />
       <ReportCamera
         visible={cameraOpen}
         onClose={() => setCameraOpen(false)}
@@ -347,14 +390,17 @@ export function ReportComposer({ paddingBottom }: { paddingBottom: number }) {
 export function PickLocationDock() {
   const cancelPickLocation = useMapSheetStore((state) => state.cancelPickLocation)
   const setPickedLocation = useMapSheetStore((state) => state.setPickedLocation)
-  const [saving, setSaving] = useState(false)
+  const [phase, setPhase] = useState<'idle' | 'busy' | 'done'>('idle')
 
   const confirm = async () => {
-    if (saving) return
-    setSaving(true)
+    if (phase !== 'idle') return
+    setPhase('busy')
     const [longitude, latitude] = useMapViewportStore.getState().center
     const label = await placeLabel(latitude, longitude)
-    setPickedLocation({ longitude, latitude, label, source: 'picked' })
+    setPhase('done')
+    setTimeout(() => {
+      setPickedLocation({ longitude, latitude, label, source: 'picked' })
+    }, 650)
   }
 
   return (
@@ -368,18 +414,14 @@ export function PickLocationDock() {
           style={({ pressed }) => [styles.pickCancel, pressed && styles.pressed]}>
           <Text style={styles.pickCancelText}>Cancel</Text>
         </Pressable>
-        <Pressable
-          accessibilityRole="button"
+        <GreenActionButton
+          label="Done"
           accessibilityLabel="Confirm location"
-          disabled={saving}
-          onPress={confirm}
-          style={({ pressed }) => [styles.pickDone, pressed && styles.pressed]}>
-          {saving ? (
-            <ActivityIndicator color="#FFFFFF" />
-          ) : (
-            <Text style={styles.pickDoneText}>Done</Text>
-          )}
-        </Pressable>
+          busy={phase === 'busy'}
+          success={phase === 'done'}
+          onPress={() => void confirm()}
+          style={styles.pickGrow}
+        />
       </View>
     </View>
   )
@@ -651,21 +693,11 @@ const styles = StyleSheet.create({
     minHeight: 96,
     marginBottom: 18,
   },
-  send: {
-    height: 52,
-    borderRadius: 26,
-    backgroundColor: '#16141A',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 4,
-  },
-  sendDisabled: {
-    opacity: 0.35,
-  },
-  sendText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '700',
+  error: {
+    color: '#FF453A',
+    fontSize: 14,
+    textAlign: 'center',
+    marginBottom: 10,
   },
   pick: {
     gap: 14,
@@ -683,7 +715,7 @@ const styles = StyleSheet.create({
   },
   pickCancel: {
     flex: 1,
-    height: 48,
+    height: 52,
     borderRadius: 24,
     backgroundColor: '#F4F2F8',
     alignItems: 'center',
@@ -694,18 +726,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
-  pickDone: {
+  pickGrow: {
     flex: 1,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#16141A',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  pickDoneText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '700',
   },
   pressed: {
     opacity: 0.7,

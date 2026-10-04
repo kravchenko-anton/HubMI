@@ -25,8 +25,15 @@ def init_db() -> None:
     with get_conn() as conn:
         conn.executescript(SCHEMA)
         columns = {r["name"] for r in conn.execute("PRAGMA table_info(issues)")}
-        if "image_url" not in columns:
-            conn.execute("ALTER TABLE issues ADD COLUMN image_url TEXT")
+        additions = {
+            "image_url": "ALTER TABLE issues ADD COLUMN image_url TEXT",
+            "solved_at": "ALTER TABLE issues ADD COLUMN solved_at TEXT",
+            "solve_note": "ALTER TABLE issues ADD COLUMN solve_note TEXT NOT NULL DEFAULT ''",
+            "solve_image_url": "ALTER TABLE issues ADD COLUMN solve_image_url TEXT",
+        }
+        for name, ddl in additions.items():
+            if name not in columns:
+                conn.execute(ddl)
 
 
 @contextmanager
