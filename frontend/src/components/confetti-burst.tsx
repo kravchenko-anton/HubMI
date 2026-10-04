@@ -1,7 +1,7 @@
 'use no memo'
 
 import { useEffect, useMemo } from 'react'
-import { StyleSheet, useWindowDimensions, View } from 'react-native'
+import { Platform, StyleSheet, useWindowDimensions, View } from 'react-native'
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -9,6 +9,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated'
 
+import { ConfettiHost } from '@/components/confetti-host'
 import { useConfettiStore, type ConfettiOrigin } from '@/stores/confetti-store'
 
 const COLORS = [
@@ -78,8 +79,6 @@ function makePieces(origin: ConfettiOrigin, seed: number): Piece[] {
   })
 }
 
-let confettiStarts = 0
-
 function ConfettiPiece({
   origin,
   width,
@@ -94,10 +93,6 @@ function ConfettiPiece({
   const progress = useSharedValue(0)
 
   useEffect(() => {
-    confettiStarts += 1
-    if (typeof window !== 'undefined') {
-      ;(window as Window & { __confettiStarts?: number }).__confettiStarts = confettiStarts
-    }
     const duration = Math.max(1, Math.round(piece.duration))
     const timer = setTimeout(() => {
       progress.value = withTiming(1, { duration, easing: Easing.linear })
@@ -156,47 +151,41 @@ export function ConfettiBurst() {
   const pieces = useMemo(() => (origin ? makePieces(origin, id) : []), [origin, id])
 
   useEffect(() => {
-    if (typeof window === 'undefined') return
-    const play = (next: ConfettiOrigin) => useConfettiStore.getState().play(next)
-    ;(window as Window & { __playConfetti?: typeof play }).__playConfetti = play
-    return () => {
-      delete (window as Window & { __playConfetti?: typeof play }).__playConfetti
-    }
-  }, [])
-
-  useEffect(() => {
     if (id === 0) return
-    const timer = setTimeout(() => useConfettiStore.getState().stop(id), 3200)
+    const timer = setTimeout(() => useConfettiStore.getState().stop(id), 2500)
     return () => clearTimeout(timer)
   }, [id])
 
   if (!origin || width <= 0 || height <= 0) return null
 
   return (
-    <View
-      pointerEvents="none"
-      accessibilityElementsHidden
-      importantForAccessibility="no-hide-descendants"
-      style={styles.layer}>
-      {pieces.map((piece, index) => (
-        <ConfettiPiece
-          key={`${id}-${index}`}
-          origin={origin}
-          width={width}
-          height={height}
-          piece={piece}
-        />
-      ))}
-    </View>
+    <ConfettiHost>
+      <View
+        pointerEvents="none"
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants"
+        style={[styles.layer, { width, height }]}>
+        {pieces.map((piece, index) => (
+          <ConfettiPiece
+            key={`${id}-${index}`}
+            origin={origin}
+            width={width}
+            height={height}
+            piece={piece}
+          />
+        ))}
+      </View>
+    </ConfettiHost>
   )
 }
 
 const styles = StyleSheet.create({
   layer: {
-    ...StyleSheet.absoluteFill,
-    zIndex: 80,
-    elevation: 80,
-    overflow: 'hidden',
+    position: Platform.OS === 'web' ? 'fixed' : 'absolute',
+    left: 0,
+    top: 0,
+    zIndex: 1000,
+    elevation: 1000,
   },
   piece: {
     position: 'absolute',
